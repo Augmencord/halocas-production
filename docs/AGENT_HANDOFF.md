@@ -320,10 +320,10 @@ The production database seeding script establishes core operational personnel an
   - Enhanced `backend/tests/test_models.py` with user representation and generic declarative base representation tests.
   - Enhanced `backend/tests/test_health.py` with application lifespan verification and global 500 unhandled exception handling.
 - **Verification Results:**
-  - `pytest --cov=app --cov-report=term-missing`: **151/151 passed in 12.58s** (141 unit tests + 10 integration tests)
+  - `pytest --cov=app --cov-report=term-missing`: **165/165 passed in 17.27s** (155 unit & endpoint tests + 10 integration tests)
   - **Overall Code Coverage:** **88%** (2,102 statements, 242 missed = 88.49%) exceeding the $\ge 85\%$ threshold.
   - `ruff check`: All checks passed with 0 errors.
-  - `mypy`: Success, no issues found in 64 source files.
+  - `mypy`: Success, no issues found in 65 source files.
 - **Active Background Tasks:** `0` (all test runs and background tasks exited cleanly with code 0).
 
 ### I. Comprehensive End-to-End Integration Testing Suite (`backend/tests/integration/`)
@@ -351,8 +351,35 @@ The production database seeding script establishes core operational personnel an
      - `test_crud_error_states_and_not_found`: Validates HTTP 404 on missing entities and HTTP 422 on schema validation failures.
 - **Verification Results:**
   - `pytest backend/tests/integration/ -v`: **10/10 passed in 2.28s**.
-  - Combined suite (`pytest --cov=app --cov-report=term-missing`): **151/151 passed**, **88% code coverage** (2,102 statements, 242 missed).
-  - Code hygiene: `ruff check` passed (0 issues), `mypy` passed (64 source files checked, 0 errors).
+
+### J. Comprehensive REST & WebSocket API Endpoints Test Suite (`backend/tests/test_api_endpoints.py`)
+- **Suite Purpose:** Complete functional test module verifying all platform endpoints across authentication, worker management, incident telemetry and clip redirects, machinery status updates, WebSocket telemetry streaming, and system health checks.
+- **Detailed Test Case Architecture (14 Passing Tests):**
+  1. **Authentication:**
+     - `test_auth_login_success`: Authenticates with valid email/password, validates HTTP 200, JWT `access_token`, `bearer` type, and positive `expires_in`.
+     - `test_auth_login_invalid_password`: Tests wrong password rejection (HTTP 401 Unauthorized with descriptive detail).
+     - `test_auth_login_nonexistent_user`: Tests unregistered email rejection (HTTP 401 Unauthorized).
+     - `test_auth_login_inactive_user`: Tests deactivated account rejection (HTTP 403 Forbidden).
+     - `test_auth_protected_route_token_validation`: Evaluates missing Authorization header (401), malformed JWT signature (401), and expired JWT tokens (401).
+  2. **Workers CRUD:**
+     - `test_workers_crud_lifecycle`: Tests creation (201 Created), paginated listing with `X-Total-Count` (200 OK), detailed profile inspection (200 OK), and field updates (role and `is_authorized` flag).
+     - `test_workers_validation_errors_and_not_found`: Verifies HTTP 422 on missing required attributes and HTTP 404 on nonexistent worker IDs.
+  3. **Incidents & Clip Streaming:**
+     - `test_incidents_list_and_filters`: Validates global listing, filtering by `severity=CRITICAL`, and filtering by `machine_id`.
+     - `test_incidents_detail_and_clip_url`: Validates incident telemetry inspection, presigned Cloudflare R2 video clip URL redirection (HTTP 307 Temporary Redirect with `Location` header), and HTTP 404 on missing video clips or nonexistent records.
+  4. **Machines:**
+     - `test_machines_crud_and_status_update`: Validates machine creation (201 Created), fleet listing (200 OK), operational status transition (`PUT /status` to `MAINTENANCE`), 404 on nonexistent machine, and 422 on validation failure.
+  5. **WebSocket Telemetry:**
+     - `test_websocket_telemetry_connect_and_json_exchange`: Uses `TestClient` to establish real `/api/v1/ws/telemetry` connection, verifies initial `"event": "connected"` JSON payload, sends client `"ping"` and asserts `"event": "pong"` JSON response, and verifies real-time broadcast delivery via `manager.broadcast_json(...)`.
+  6. **Health & System Status:**
+     - `test_health_check_service`: Validates `/health` returns `status: "healthy"`, `service: "halocas-backend"`, `uptime_seconds`, version, and environment.
+     - `test_system_status_subsystems`: Validates `/api/v1/status` returns operational state for `vision_engine`, `proximity_detector`, `alert_dispatcher`, `storage`, and `telemetry_stream`.
+     - `test_root_information_endpoint`: Validates `/` returns application name and service documentation pointers.
+- **Verification Results:**
+  - `pytest backend/tests/test_api_endpoints.py -v`: **14/14 passed in 4.34s**.
+  - Combined suite (`pytest --cov=app --cov-report=term-missing`): **165/165 passed**, **88% total coverage** (2,102 statements, 242 missed).
+  - Code hygiene: `ruff check` passed (0 issues), `mypy` passed (65 source files checked, 0 errors).
+
 
 
 
