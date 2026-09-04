@@ -11,23 +11,21 @@ on:
       - master
 
 jobs:
-  test-and-lint:
+  backend-test-and-lint:
+    name: Backend CI (Python 3.11)
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11"]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
           cache: "pip"
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
@@ -44,3 +42,33 @@ jobs:
       - name: Run test suite with pytest
         run: |
           pytest --cov=backend/app --cov-report=term-missing
+
+  frontend-lint-and-build:
+    name: Frontend CI (Node 20 / Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          npm ci
+
+      - name: Lint with ESLint
+        run: |
+          npm run lint
+
+      - name: Build Next.js application
+        run: |
+          npm run build
