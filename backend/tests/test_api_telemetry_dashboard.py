@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
+from typing import Any
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -13,7 +14,6 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from starlette.testclient import TestClient
 
 from app.api.deps import get_current_user, get_db
 from app.api.routes.telemetry import manager
@@ -179,26 +179,59 @@ async def test_live_mjpeg_stream() -> None:
     await gen.aclose()
 
 
-def test_websocket_telemetry_flow() -> None:
-    """Verify WebSocket handshake, ping-pong communication, and broadcast."""
-    with TestClient(app) as client:
-        with client.websocket_connect("/api/v1/ws/telemetry") as websocket:
-            # First frame is connection handshake
-            handshake = websocket.receive_json()
-            assert handshake["event"] == "connected"
-            assert "HALOCAS" in handshake["message"]
+@pytest.mark.asyncio
+async def test_websocket_telemetry_flow() -> None:
+    """Verify WebSocket handshake, ping-pong communication, and disconnect."""
+    from unittest.mock import AsyncMock
 
-            # Ping-pong heartbeat
-            websocket.send_text("ping")
-            pong = websocket.receive_json()
-            assert pong["event"] == "pong"
+    from fastapi import WebSocket, WebSocketDisconnect
+
+    from app.api.routes.telemetry import websocket_telemetry_endpoint
+
+    mock_ws = AsyncMock(spec=WebSocket)
+    messages_sent: list[dict[str, Any]] = []
+
+    async def fake_send_json(data: dict[str, Any]) -> None:
+        messages_sent.append(data)
+
+    mock_ws.send_json.side_effect = fake_send_json
+    # Client sends ping then disconnects
+    mock_ws.receive_text.side_effect = ["ping", WebSocketDisconnect()]
+
+    await websocket_telemetry_endpoint(mock_ws)
+
+    mock_ws.accept.assert_awaited_once()
+    assert len(messages_sent) == 2
+    assert messages_sent[0]["event"] == "connected"
+    assert "HALOCAS" in messages_sent[0]["message"]
+    assert messages_sent[1]["event"] == "pong"
+    assert mock_ws not in manager.active_connections
 
 
 @pytest.mark.asyncio
 async def test_websocket_broadcast_manager() -> None:
-    """Verify ConnectionManager broadcast method handles active/empty connections."""
+    """Verify ConnectionManager broadcast method handles active and dead connections."""
+    from unittest.mock import AsyncMock
+
+    from fastapi import WebSocket
+
+    mock_ws = AsyncMock(spec=WebSocket)
+    await manager.connect(mock_ws)
+    assert mock_ws in manager.active_connections
+
     await manager.broadcast_json({"test": "data"})
-    assert isinstance(manager.active_connections, list)
+    mock_ws.send_json.assert_awaited_with({"test": "data"})
+
+    # Dead connection handling during broadcast
+    dead_ws = AsyncMock(spec=WebSocket)
+    dead_ws.send_json.side_effect = RuntimeError("Connection dropped")
+    await manager.connect(dead_ws)
+    assert dead_ws in manager.active_connections
+    await manager.broadcast_json({"test": "dead_drop"})
+    assert dead_ws not in manager.active_connections
+
+    await manager.disconnect(mock_ws)
+    assert mock_ws not in manager.active_connections
 
 
 @pytest.mark.asyncio
