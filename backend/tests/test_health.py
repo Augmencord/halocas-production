@@ -59,11 +59,23 @@ async def test_not_found_endpoint(async_client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_application_lifespan() -> None:
     """Verify application startup verification and shutdown cleanup."""
+    from unittest.mock import MagicMock, patch
+
     from app.main import app, lifespan
 
-    async with lifespan(app):
-        assert app.title is not None
-        assert len(app.routes) > 0
+    mock_detector = MagicMock()
+    mock_face_verifier = MagicMock()
+
+    with (
+        patch("app.api.deps.get_detector", return_value=mock_detector),
+        patch("app.api.deps.get_face_verifier", return_value=mock_face_verifier),
+    ):
+        async with lifespan(app):
+            assert app.title is not None
+            assert len(app.routes) > 0
+
+    mock_detector._warmup.assert_called_once()
+    mock_face_verifier._warmup.assert_called_once()
 
 
 @pytest.mark.asyncio
