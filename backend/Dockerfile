@@ -34,13 +34,6 @@ RUN pip install --upgrade pip setuptools wheel && \
 # ==============================================================================
 FROM python:3.11-slim AS runner
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PATH="/opt/venv/bin:$PATH" \
-    PYTHONPATH="/app"
-
-WORKDIR /app
-
 # Install minimal dynamic shared libraries required by OpenCV and PostgreSQL
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
@@ -49,6 +42,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     curl \
     && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin" \
+    PYTHONPATH="/app"
+
+WORKDIR /app
 
 # Copy pre-compiled virtual environment from builder stage
 COPY --from=builder /opt/venv /opt/venv

@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # HALOCAS Production Dockerfile (Repository Root Context)
 # ==============================================================================
 FROM python:3.11-slim AS builder
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Create virtual environment
 RUN python -m venv /opt/venv
-ENV PATH=/opt/venv/bin:
+ENV PATH="/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Install dependencies into virtual environment
 COPY backend/requirements.txt requirements.txt
@@ -33,14 +33,7 @@ RUN pip install --upgrade pip setuptools wheel && \
 # ==============================================================================
 FROM python:3.11-slim AS runner
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PATH=/opt/venv/bin: \
-    PYTHONPATH=/app
-
-WORKDIR /app
-
-# Install minimal dynamic shared libraries required by OpenCV and PostgreSQL
+# Install minimal dynamic shared libraries required by OpenCV and PostgreSQL BEFORE modifying PATH
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     ffmpeg \
@@ -48,6 +41,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     curl \
     && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin" \
+    PYTHONPATH="/app"
+
+WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
 
@@ -68,6 +68,6 @@ USER halocas
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-CMD [/app/render_start.sh]
+CMD ["/app/render_start.sh"]
