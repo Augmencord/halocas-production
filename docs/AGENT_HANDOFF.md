@@ -380,6 +380,20 @@ The production database seeding script establishes core operational personnel an
   - Combined suite (`pytest --cov=app --cov-report=term-missing`): **165/165 passed**, **88% total coverage** (2,102 statements, 242 missed).
   - Code hygiene: `ruff check` passed (0 issues), `mypy` passed (65 source files checked, 0 errors).
 
+### K. Production GitHub Actions CI/CD Pipeline Architecture
+- **Workflows Configured:**
+  1. `.github/workflows/ci.yml`: Master multi-stage CI/CD pipeline executing:
+     - `lint-backend`: `ruff check backend/app backend/tests` and `mypy backend/app backend/tests` on Python 3.11.
+     - `lint-frontend`: `npm run lint` under `frontend/` on Node 20.
+     - `test-backend`: Asynchronous test suite with an active PostgreSQL 16 Alpine service container (`pg_isready` health check, port 5432) executing `pytest --cov=app --cov-report=term-missing`.
+     - `test-frontend`: `npm run build` production compilation and `npm test` verification.
+     - `deploy-backend`: Automatic Render deployment trigger via webhook (`RENDER_DEPLOY_HOOK_URL`) running exclusively on `main` branch pushes after test passes.
+  2. `.github/workflows/frontend-ci.yml`: Dedicated frontend pipeline triggering on path changes within `frontend/**`:
+     - `lint-frontend`: `npm ci` and ESLint checks.
+     - `test-frontend`: Next.js 14 production bundle build and `npm test`.
+- **Validation:** Both YAML configurations validated with zero syntax or indentation errors via PyYAML.
+
+
 
 
 
