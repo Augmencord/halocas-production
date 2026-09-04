@@ -138,6 +138,7 @@ Thumbs.db
 
 # Machine Learning Models & Weights
 *.pt
+!backend/yolov8n.pt
 *.pth
 *.onnx
 *.engine

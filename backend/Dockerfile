@@ -61,8 +61,10 @@ RUN groupadd -g 10001 halocas && \
 COPY --chown=halocas:halocas app /app/app
 COPY --chown=halocas:halocas alembic /app/alembic
 COPY --chown=halocas:halocas alembic.ini /app/alembic.ini
-COPY --chown=halocas:halocas yolov8n.pt /app/yolov8n.pt
+RUN curl -fsSL https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8n.pt -o /app/yolov8n.pt && \
+    chown halocas:halocas /app/yolov8n.pt
 COPY --chown=halocas:halocas render_start.sh /app/render_start.sh
+RUN chmod +x /app/render_start.sh
 
 # Ensure startup script has executable permissions
 RUN chmod +x /app/render_start.sh
