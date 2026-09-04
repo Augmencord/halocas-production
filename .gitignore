@@ -149,3 +149,10 @@ clips/
 temp_frames/
 *.mp4
 *.avi
+
+# Node.js and Next.js artifacts
+node_modules/
+.next/
+out/
+next-env.d.ts
+

@@ -1,0 +1,132 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+@theme {
+  --color-bg: #111827;
+  --color-panel: #1f2937;
+  --color-border: #374151;
+  --color-cyan: #00FFFF;
+  --color-red: #FF3B30;
+  --color-green: #10B981;
+  --color-amber: #F59E0B;
+
+  --color-halocas-bg: #111827;
+  --color-halocas-panel: #1f2937;
+  --color-halocas-border: #374151;
+  --color-halocas-cyan: #00FFFF;
+  --color-halocas-red: #FF3B30;
+  --color-halocas-green: #10B981;
+  --color-halocas-amber: #F59E0B;
+  --color-halocas-dark: #0B0F17;
+  --color-halocas-slate: #1e293b;
+  --color-halocas-subtle: #9CA3AF;
+
+  --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  --background: #111827;
+  --foreground: #F3F4F6;
+  --panel: #1f2937;
+  --border: #374151;
+  --cyan: #00FFFF;
+  --red: #FF3B30;
+  --green: #10B981;
+}
+
+* {
+  border-color: #374151;
+}
+
+html,
+body {
+  background-color: #111827;
+  color: #F3F4F6;
+  font-family: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Global Smooth Transitions */
+a,
+button,
+input,
+select,
+textarea {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00FFFF;
+}
+
+/* Glassmorphism & Visual Utilities */
+.glass-panel {
+  background: rgba(31, 41, 55, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(55, 65, 81, 0.6);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+}
+
+.cyan-glow {
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.25);
+}
+
+.cyan-glow-text {
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+}
+
+.red-glow {
+  box-shadow: 0 0 15px rgba(255, 59, 48, 0.35);
+}
+
+.hud-grid {
+  background-image: linear-gradient(to right, rgba(55, 65, 81, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(55, 65, 81, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@keyframes beacon-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(0, 255, 255, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
+  }
+}
+
+.animate-beacon {
+  animation: beacon-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
