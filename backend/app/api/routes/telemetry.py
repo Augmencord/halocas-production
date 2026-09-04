@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
-from typing import Annotated, Any
+from typing import Annotated
 
 import cv2
 import numpy as np
@@ -15,49 +15,13 @@ from fastapi.responses import StreamingResponse
 from app.api.deps import get_buffer_manager
 from app.core.buffer import BufferManager, burn_timestamp_overlay
 from app.core.logging import get_logger
+from app.core.telemetry import ConnectionManager, manager
 
 logger = get_logger("halocas.api.telemetry")
 
 router = APIRouter(tags=["Telemetry & Streaming"])
 
-
-class ConnectionManager:
-    """Manages active WebSocket client connections for telemetry broadcasts."""
-
-    def __init__(self) -> None:
-        self.active_connections: list[WebSocket] = []
-        self._lock = asyncio.Lock()
-
-    async def connect(self, websocket: WebSocket) -> None:
-        """Accept incoming connection and register client."""
-        await websocket.accept()
-        async with self._lock:
-            self.active_connections.append(websocket)
-        logger.info("WebSocket telemetry client connected (total: %d)", len(self.active_connections))
-
-    async def disconnect(self, websocket: WebSocket) -> None:
-        """Unregister disconnected client."""
-        async with self._lock:
-            if websocket in self.active_connections:
-                self.active_connections.remove(websocket)
-        logger.info("WebSocket telemetry client disconnected (remaining: %d)", len(self.active_connections))
-
-    async def broadcast_json(self, data: dict[str, Any]) -> None:
-        """Send JSON telemetry payload to all connected clients."""
-        async with self._lock:
-            disconnected: list[WebSocket] = []
-            for connection in self.active_connections:
-                try:
-                    await connection.send_json(data)
-                except Exception:
-                    disconnected.append(connection)
-
-            for dead_connection in disconnected:
-                if dead_connection in self.active_connections:
-                    self.active_connections.remove(dead_connection)
-
-
-manager = ConnectionManager()
+__all__ = ["ConnectionManager", "manager", "router"]
 
 
 @router.websocket("/ws/telemetry")

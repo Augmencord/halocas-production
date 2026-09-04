@@ -23,6 +23,11 @@ from app.core.face_verifier import (
     FaceVerifier,
 )
 from app.core.logging import get_logger, setup_logging
+from app.core.pipeline import (
+    PipelineError,
+    PipelineInputError,
+    PipelineOrchestrator,
+)
 from app.core.state_machine import (
     SafetyEvent,
     SafetyStateMachine,
@@ -44,6 +49,9 @@ __all__ = [
     "InferenceError",
     "InvalidFrameError",
     "ModelLoadError",
+    "PipelineError",
+    "PipelineInputError",
+    "PipelineOrchestrator",
     "RollingFrameBuffer",
     "SafetyEvent",
     "SafetyStateMachine",
