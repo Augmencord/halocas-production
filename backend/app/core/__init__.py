@@ -14,6 +14,11 @@ from app.core.face_verifier import (
     FaceVerifier,
 )
 from app.core.logging import get_logger, setup_logging
+from app.core.state_machine import (
+    SafetyEvent,
+    SafetyStateMachine,
+    Severity,
+)
 
 __all__ = [
     "DetectionResult",
@@ -25,6 +30,9 @@ __all__ = [
     "InferenceError",
     "InvalidFrameError",
     "ModelLoadError",
+    "SafetyEvent",
+    "SafetyStateMachine",
+    "Severity",
     "get_logger",
     "setup_logging",
 ]
