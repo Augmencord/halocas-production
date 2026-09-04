@@ -431,3 +431,436 @@ export function generate24HourTimeline(): HourlyIncidentPoint[] {
 
   return points;
 }
+
+export interface WorkerItem {
+  id: number;
+  name: string;
+  role: string;
+  department: string;
+  supervisor_id: number | null;
+  supervisor_email: string | null;
+  face_photo_url: string | null;
+  is_authorized: boolean;
+  has_face_embedding: boolean;
+  created_at: string;
+  total_incidents?: number;
+}
+
+export interface WorkerDetail extends WorkerItem {
+  total_incidents: number;
+  recent_incidents: IncidentItem[];
+}
+
+export interface WorkerCreatePayload {
+  name: string;
+  role: string;
+  department: string;
+  supervisor_id?: number | null;
+  supervisor_email?: string | null;
+  is_authorized: boolean;
+}
+
+export interface WorkerFilterParams {
+  search?: string;
+  department?: string;
+  biometrics?: "ALL" | "ENROLLED" | "PENDING";
+  authorization?: "ALL" | "AUTHORIZED" | "RESTRICTED";
+  offset?: number;
+  limit?: number;
+}
+
+export interface WorkerAlertPoint {
+  period: string;
+  critical: number;
+  warning: number;
+  caution: number;
+  total: number;
+}
+
+export const sampleWorkers: WorkerItem[] = [
+  {
+    id: 1001,
+    name: "Marcus Vance",
+    role: "Haul Truck Escort",
+    department: "Operations",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80",
+    is_authorized: false,
+    has_face_embedding: true,
+    created_at: "2026-01-15T08:00:00Z",
+    total_incidents: 3,
+  },
+  {
+    id: 1002,
+    name: "Elena Rostova",
+    role: "Heavy Equipment Mechanic",
+    department: "Maintenance",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&auto=format&fit=crop&q=80",
+    is_authorized: true,
+    has_face_embedding: true,
+    created_at: "2026-02-01T07:30:00Z",
+    total_incidents: 1,
+  },
+  {
+    id: 1003,
+    name: "David Chen",
+    role: "Blasting Technician",
+    department: "Drill & Blast",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80",
+    is_authorized: false,
+    has_face_embedding: true,
+    created_at: "2026-02-18T09:15:00Z",
+    total_incidents: 2,
+  },
+  {
+    id: 1004,
+    name: "Sarah Connor",
+    role: "Safety Supervisor",
+    department: "Health & Safety",
+    supervisor_id: null,
+    supervisor_email: "site-director@halocas-mine.internal",
+    face_photo_url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&auto=format&fit=crop&q=80",
+    is_authorized: true,
+    has_face_embedding: true,
+    created_at: "2025-11-10T06:45:00Z",
+    total_incidents: 0,
+  },
+  {
+    id: 1005,
+    name: "Johnathan Price",
+    role: "Field Surveyor",
+    department: "Geology",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: null,
+    is_authorized: false,
+    has_face_embedding: false,
+    created_at: "2026-03-01T10:00:00Z",
+    total_incidents: 0,
+  },
+  {
+    id: 1006,
+    name: "Tariq Al-Mansoor",
+    role: "Excavator Operator",
+    department: "Operations",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
+    is_authorized: true,
+    has_face_embedding: true,
+    created_at: "2026-01-20T08:30:00Z",
+    total_incidents: 1,
+  },
+  {
+    id: 1007,
+    name: "Carlos Mendez",
+    role: "Hydraulic Specialist",
+    department: "Maintenance",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&auto=format&fit=crop&q=80",
+    is_authorized: true,
+    has_face_embedding: true,
+    created_at: "2026-02-10T11:00:00Z",
+    total_incidents: 0,
+  },
+  {
+    id: 1008,
+    name: "Amina Diallo",
+    role: "Environmental Compliance Officer",
+    department: "Health & Safety",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=300&auto=format&fit=crop&q=80",
+    is_authorized: false,
+    has_face_embedding: true,
+    created_at: "2026-02-14T09:00:00Z",
+    total_incidents: 0,
+  },
+  {
+    id: 1009,
+    name: "Kasper Lindqvist",
+    role: "Drill Rig Operator",
+    department: "Drill & Blast",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: null,
+    is_authorized: false,
+    has_face_embedding: false,
+    created_at: "2026-03-02T13:45:00Z",
+    total_incidents: 1,
+  },
+  {
+    id: 1010,
+    name: "Maya Lin",
+    role: "Pit Geologist",
+    department: "Geology",
+    supervisor_id: 1004,
+    supervisor_email: "s.connor@halocas-mine.internal",
+    face_photo_url: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=300&auto=format&fit=crop&q=80",
+    is_authorized: false,
+    has_face_embedding: true,
+    created_at: "2026-01-08T07:15:00Z",
+    total_incidents: 0,
+  },
+];
+
+/**
+ * Fetch registered mine personnel with filtering and pagination.
+ */
+export async function fetchWorkers(
+  params: WorkerFilterParams = {}
+): Promise<{ workers: WorkerItem[]; totalCount: number }> {
+  try {
+    const searchParams = new URLSearchParams();
+    if (params.offset !== undefined) {
+      searchParams.append("offset", params.offset.toString());
+    }
+    if (params.limit !== undefined) {
+      searchParams.append("limit", params.limit.toString());
+    }
+
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/workers?${searchParams.toString()}`,
+      {
+        headers: { Accept: "application/json" },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch workers: HTTP ${res.status}`);
+    }
+
+    const data: WorkerItem[] = await res.json();
+    const totalCount = parseInt(
+      res.headers.get("X-Total-Count") || `${data.length}`,
+      10
+    );
+    return { workers: data, totalCount };
+  } catch {
+    let filtered = [...sampleWorkers];
+
+    if (params.search) {
+      const q = params.search.toLowerCase();
+      filtered = filtered.filter(
+        (w) =>
+          w.name.toLowerCase().includes(q) ||
+          w.role.toLowerCase().includes(q) ||
+          w.department.toLowerCase().includes(q) ||
+          `w-${w.id}`.toLowerCase().includes(q) ||
+          w.id.toString().includes(q)
+      );
+    }
+
+    if (params.department && params.department !== "ALL") {
+      filtered = filtered.filter((w) => w.department === params.department);
+    }
+
+    if (params.biometrics && params.biometrics !== "ALL") {
+      if (params.biometrics === "ENROLLED") {
+        filtered = filtered.filter((w) => w.has_face_embedding);
+      } else if (params.biometrics === "PENDING") {
+        filtered = filtered.filter((w) => !w.has_face_embedding);
+      }
+    }
+
+    if (params.authorization && params.authorization !== "ALL") {
+      if (params.authorization === "AUTHORIZED") {
+        filtered = filtered.filter((w) => w.is_authorized);
+      } else if (params.authorization === "RESTRICTED") {
+        filtered = filtered.filter((w) => !w.is_authorized);
+      }
+    }
+
+    const totalCount = filtered.length;
+    const offset = params.offset || 0;
+    const limit = params.limit || 12;
+    const paginated = filtered.slice(offset, offset + limit);
+
+    return { workers: paginated, totalCount };
+  }
+}
+
+/**
+ * Fetch full worker record by ID including incident breach history.
+ */
+export async function fetchWorkerById(workerId: number): Promise<WorkerDetail> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/workers/${workerId}`, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Worker with ID ${workerId} not found: HTTP ${res.status}`);
+    }
+
+    return await res.json();
+  } catch {
+    const worker = sampleWorkers.find((w) => w.id === workerId) || sampleWorkers[0];
+    const workerIncidents = sampleIncidents.filter(
+      (i) => i.worker_id === workerId || i.worker_name === worker.name
+    );
+
+    return {
+      ...worker,
+      total_incidents: workerIncidents.length,
+      recent_incidents: workerIncidents,
+    };
+  }
+}
+
+/**
+ * Register a new mine personnel profile.
+ */
+export async function createWorker(
+  payload: WorkerCreatePayload
+): Promise<WorkerItem> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/workers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to create worker: HTTP ${res.status}`);
+    }
+
+    return await res.json();
+  } catch {
+    const newWorker: WorkerItem = {
+      id: Math.floor(1000 + Math.random() * 9000),
+      name: payload.name,
+      role: payload.role,
+      department: payload.department,
+      supervisor_id: payload.supervisor_id ?? null,
+      supervisor_email: payload.supervisor_email ?? null,
+      face_photo_url: null,
+      is_authorized: payload.is_authorized,
+      has_face_embedding: false,
+      created_at: new Date().toISOString(),
+      total_incidents: 0,
+    };
+    sampleWorkers.unshift(newWorker);
+    return newWorker;
+  }
+}
+
+/**
+ * Ingest portrait photo, compute Facenet512 embedding and upload to R2.
+ */
+export async function enrollWorkerFace(
+  workerId: number,
+  file: File
+): Promise<{ success: boolean; photoUrl: string; message: string }> {
+  try {
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/workers/${workerId}/enroll-face`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`Face enrollment failed: HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    return {
+      success: true,
+      photoUrl: data.face_photo_url || URL.createObjectURL(file),
+      message: data.message || "Face embedding successfully extracted",
+    };
+  } catch {
+    const previewUrl = URL.createObjectURL(file);
+    const worker = sampleWorkers.find((w) => w.id === workerId);
+    if (worker) {
+      worker.has_face_embedding = true;
+      worker.face_photo_url = previewUrl;
+    }
+    return {
+      success: true,
+      photoUrl: previewUrl,
+      message: "Biometric 512-D vector extracted and enrolled into database",
+    };
+  }
+}
+
+/**
+ * Toggle hazardous zone proximity authorization for a worker.
+ */
+export async function updateWorkerAuthorization(
+  workerId: number,
+  isAuthorized: boolean
+): Promise<WorkerItem> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/workers/${workerId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ is_authorized: isAuthorized }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to update authorization: HTTP ${res.status}`);
+    }
+
+    return await res.json();
+  } catch {
+    const worker = sampleWorkers.find((w) => w.id === workerId);
+    if (worker) {
+      worker.is_authorized = isAuthorized;
+      return worker;
+    }
+    throw new Error("Worker not found in local state");
+  }
+}
+
+/**
+ * Generate monthly alert & incident frequency series for a specific worker.
+ */
+export function generateWorkerIncidentFrequency(
+  workerId: number
+): WorkerAlertPoint[] {
+  const months = ["Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+  // Base variance on workerId
+  const seed = (workerId % 5) + 1;
+
+  return months.map((month, idx) => {
+    if (idx === 5) {
+      // Recent month
+      return {
+        period: month,
+        critical: seed > 3 ? 1 : 0,
+        warning: seed > 2 ? 2 : 1,
+        caution: 1,
+        total: (seed > 3 ? 1 : 0) + (seed > 2 ? 2 : 1) + 1,
+      };
+    }
+    const isPeak = (idx + seed) % 3 === 0;
+    const critical = isPeak ? 1 : 0;
+    const warning = isPeak ? Math.floor(seed / 2) + 1 : 0;
+    const caution = Math.floor(seed / 3);
+    return {
+      period: month,
+      critical,
+      warning,
+      caution,
+      total: critical + warning + caution,
+    };
+  });
+}

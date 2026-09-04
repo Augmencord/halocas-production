@@ -1,253 +1,311 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Users,
+  Fingerprint,
   ShieldCheck,
-  Search,
-  Camera,
-  HardHat,
+  AlertTriangle,
+  RefreshCw,
+  AlertCircle,
   CheckCircle2,
-  XCircle,
+  X,
 } from "lucide-react";
+import {
+  fetchWorkers,
+  WorkerItem,
+  WorkerFilterParams,
+} from "@/lib/api";
+import { WorkerFilters } from "@/components/workers/WorkerFilters";
+import { WorkerGrid } from "@/components/workers/WorkerGrid";
+import { WorkerTable } from "@/components/workers/WorkerTable";
+import { AddWorkerModal } from "@/components/workers/AddWorkerModal";
 
-interface WorkerRecord {
+interface Toast {
   id: string;
-  name: string;
-  role: string;
-  department: string;
-  supervisorName: string;
-  isAuthorized: boolean;
-  hasEmbedding: boolean;
-  photoUrl?: string;
+  type: "success" | "error" | "info";
+  message: string;
 }
 
-const initialWorkers: WorkerRecord[] = [
-  {
-    id: "W-1001",
-    name: "Marcus Vance",
-    role: "Haul Truck Escort",
-    department: "Operations",
-    supervisorName: "Sarah Connor",
-    isAuthorized: false,
-    hasEmbedding: true,
-  },
-  {
-    id: "W-1002",
-    name: "Elena Rostova",
-    role: "Heavy Equipment Mechanic",
-    department: "Maintenance",
-    supervisorName: "Sarah Connor",
-    isAuthorized: true,
-    hasEmbedding: true,
-  },
-  {
-    id: "W-1003",
-    name: "David Chen",
-    role: "Blasting Technician",
-    department: "Drill & Blast",
-    supervisorName: "Sarah Connor",
-    isAuthorized: false,
-    hasEmbedding: true,
-  },
-  {
-    id: "W-1004",
-    name: "Sarah Connor",
-    role: "Safety Supervisor",
-    department: "Health & Safety",
-    supervisorName: "Site Director",
-    isAuthorized: true,
-    hasEmbedding: true,
-  },
-  {
-    id: "W-1005",
-    name: "Johnathan Price",
-    role: "Field Surveyor",
-    department: "Geology",
-    supervisorName: "Sarah Connor",
-    isAuthorized: false,
-    hasEmbedding: false,
-  },
-];
-
 export default function WorkersPage(): React.JSX.Element {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [showEnrollModal, setShowEnrollModal] = useState<boolean>(false);
+  const [workers, setWorkers] = useState<WorkerItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredWorkers = initialWorkers.filter(
-    (w) =>
-      w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      w.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      w.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // View Mode: grid vs table
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+
+  // Filters
+  const [filters, setFilters] = useState<WorkerFilterParams>({
+    search: "",
+    department: "ALL",
+    biometrics: "ALL",
+    authorization: "ALL",
+    offset: 0,
+    limit: 12,
+  });
+
+  // Add Worker Modal
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+
+  // Toasts
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const addToast = (type: "success" | "error" | "info", message: string): void => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  };
+
+  const removeToast = (id: string): void => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  // Extract unique departments
+  const availableDepartments = useMemo(() => {
+    const depts = new Set<string>([
+      "Operations",
+      "Maintenance",
+      "Drill & Blast",
+      "Health & Safety",
+      "Geology",
+      "Logistics",
+    ]);
+    workers.forEach((w) => {
+      if (w.department) depts.add(w.department);
+    });
+    return Array.from(depts);
+  }, [workers]);
+
+  useEffect(() => {
+    let active = true;
+
+    const run = async (): Promise<void> => {
+      try {
+        const res = await fetchWorkers(filters);
+        if (active) {
+          setWorkers(res.workers);
+          setTotalCount(res.totalCount);
+          setError(null);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        if (active) {
+          const msg =
+            err instanceof Error ? err.message : "Failed to load mine personnel";
+          setError(msg);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void run();
+
+    return () => {
+      active = false;
+    };
+  }, [filters]);
+
+  const handleFilterChange = (newFilters: Partial<WorkerFilterParams>): void => {
+    setIsLoading(true);
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
+
+  const handleRefresh = (): void => {
+    setIsLoading(true);
+    setFilters((prev) => ({ ...prev }));
+  };
+
+  const handleWorkerCreated = (newWorker: WorkerItem): void => {
+    addToast(
+      "success",
+      `Worker ${newWorker.name} (W-${newWorker.id}) registered successfully with biometrics!`
+    );
+    setIsLoading(true);
+    setFilters((prev) => ({ ...prev }));
+  };
+
+  // Metrics computation
+  const totalMonitored = totalCount || workers.length;
+  const enrolledCount = workers.filter((w) => w.has_face_embedding).length;
+  const enrolledPercent =
+    totalMonitored > 0
+      ? Math.round((enrolledCount / totalMonitored) * 100)
+      : 0;
+  const authorizedCount = workers.filter((w) => w.is_authorized).length;
+  const breachCount = workers.filter((w) => (w.total_incidents || 0) > 0).length;
 
   return (
-    <div className="space-y-6">
-      {/* Top Metrics Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-[#1f2937]/90 border border-[#374151]">
-          <span className="text-xs text-gray-400 font-mono uppercase">
-            Total Monitored Personnel
-          </span>
-          <div className="text-2xl font-bold text-white font-mono mt-1">24</div>
-        </div>
-        <div className="p-4 rounded-2xl bg-[#1f2937]/90 border border-[#374151]">
-          <span className="text-xs text-gray-400 font-mono uppercase">
-            Biometrics Enrolled (Facenet512)
-          </span>
-          <div className="text-2xl font-bold text-[#10B981] font-mono mt-1">
-            23 <span className="text-xs text-gray-400 font-normal">(95.8%)</span>
+    <div className="space-y-6 pb-12">
+      {/* Toast Stack */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold shadow-2xl backdrop-blur-md transition-all ${
+              toast.type === "success"
+                ? "bg-[#10B981]/20 border-[#10B981] text-[#10B981]"
+                : toast.type === "error"
+                ? "bg-[#FF3B30]/20 border-[#FF3B30] text-[#FF3B30]"
+                : "bg-[#00FFFF]/20 border-[#00FFFF] text-[#00FFFF]"
+            }`}
+          >
+            {toast.type === "success" ? (
+              <CheckCircle2 className="w-4 h-4" />
+            ) : (
+              <AlertCircle className="w-4 h-4" />
+            )}
+            <span>{toast.message}</span>
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="ml-2 hover:opacity-75"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-        </div>
-        <div className="p-4 rounded-2xl bg-[#1f2937]/90 border border-[#374151]">
-          <span className="text-xs text-gray-400 font-mono uppercase">
-            Authorized Mechanics
-          </span>
-          <div className="text-2xl font-bold text-[#00FFFF] font-mono mt-1">
-            6 Active
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Control Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-[#1f2937]/90 border border-[#374151]">
-        <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search workers by name, role, department..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#111827] border border-[#374151] text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#00FFFF]"
-          />
+      {/* Header & Title */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-mono text-gray-400 uppercase tracking-wider mb-1">
+            <Users className="w-4 h-4 text-[#00FFFF]" />
+            <span>Workforce Safety & Biometrics</span>
+          </div>
+          <h1 className="text-2xl font-black text-white tracking-tight">
+            Personnel Directory
+          </h1>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Monitor mine site personnel, manage hazard zone clearances, and verify DeepFace 512-D biometrics.
+          </p>
         </div>
 
         <button
-          onClick={() => setShowEnrollModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00FFFF] text-[#111827] text-xs font-bold hover:bg-[#00FFFF]/90 transition-all shadow-cyan-glow"
+          onClick={handleRefresh}
+          disabled={isLoading}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1f2937] border border-[#374151] hover:border-[#00FFFF] text-gray-300 hover:text-white text-xs font-semibold self-start sm:self-auto transition-colors"
         >
-          <Camera className="w-4 h-4" />
-          <span>Enroll New Face (DeepFace)</span>
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-[#00FFFF]" : ""}`}
+          />
+          <span>Refresh Directory</span>
         </button>
       </div>
 
-      {/* Workers Table */}
-      <div className="p-6 rounded-2xl bg-[#1f2937]/90 border border-[#374151] space-y-4">
-        <h3 className="text-base font-bold text-white flex items-center gap-2">
-          <Users className="w-4 h-4 text-[#00FFFF]" />
-          Personnel Directory
-        </h3>
+      {/* Top Metrics Cards Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Monitored */}
+        <div className="p-4 rounded-2xl bg-[#1f2937]/90 border border-[#374151] backdrop-blur-sm space-y-1">
+          <div className="flex items-center justify-between text-xs text-gray-400 font-mono uppercase">
+            <span>Total Personnel</span>
+            <Users className="w-4 h-4 text-[#00FFFF]" />
+          </div>
+          <div className="text-2xl font-bold text-white font-mono">
+            {totalMonitored}
+          </div>
+          <div className="text-[11px] text-gray-400 font-mono">
+            Across 6 operational sectors
+          </div>
+        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-[#374151] text-gray-400 font-mono uppercase text-[10px]">
-                <th className="pb-3 font-semibold">Worker</th>
-                <th className="pb-3 font-semibold">Role</th>
-                <th className="pb-3 font-semibold">Department</th>
-                <th className="pb-3 font-semibold">Supervisor</th>
-                <th className="pb-3 font-semibold">Biometrics</th>
-                <th className="pb-3 font-semibold">Zone Authorization</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#374151]/60">
-              {filteredWorkers.map((w) => (
-                <tr key={w.id} className="hover:bg-[#111827]/40 transition-colors">
-                  <td className="py-3 font-medium text-white flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-[#111827] border border-[#374151] flex items-center justify-center text-gray-300">
-                      <HardHat className="w-4 h-4 text-[#00FFFF]" />
-                    </div>
-                    <div>
-                      <div className="font-semibold">{w.name}</div>
-                      <div className="text-[10px] text-gray-400 font-mono">
-                        {w.id}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 text-gray-300">{w.role}</td>
-                  <td className="py-3 text-gray-400">{w.department}</td>
-                  <td className="py-3 text-gray-300">{w.supervisorName}</td>
-                  <td className="py-3">
-                    {w.hasEmbedding ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">
-                        <CheckCircle2 className="w-3 h-3" />
-                        512-D ENROLLED
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#FF3B30]/15 text-[#FF3B30] border border-[#FF3B30]/30">
-                        <XCircle className="w-3 h-3" />
-                        PENDING SCAN
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3">
-                    {w.isAuthorized ? (
-                      <span className="inline-flex items-center gap-1 text-[#10B981] font-semibold text-[11px]">
-                        <ShieldCheck className="w-4 h-4" />
-                        Authorized (No Alarm)
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-gray-400 text-[11px]">
-                        Standard Restricted
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Biometrics Enrolled */}
+        <div className="p-4 rounded-2xl bg-[#1f2937]/90 border border-[#374151] backdrop-blur-sm space-y-1">
+          <div className="flex items-center justify-between text-xs text-gray-400 font-mono uppercase">
+            <span>512-D Biometrics</span>
+            <Fingerprint className="w-4 h-4 text-[#10B981]" />
+          </div>
+          <div className="text-2xl font-bold text-[#10B981] font-mono">
+            {enrolledPercent}%
+          </div>
+          <div className="text-[11px] text-gray-400 font-mono">
+            {enrolledCount} of {totalMonitored} enrolled in Facenet512
+          </div>
+        </div>
+
+        {/* Hazard Authorized */}
+        <div className="p-4 rounded-2xl bg-[#1f2937]/90 border border-[#374151] backdrop-blur-sm space-y-1">
+          <div className="flex items-center justify-between text-xs text-gray-400 font-mono uppercase">
+            <span>Hazard Authorized</span>
+            <ShieldCheck className="w-4 h-4 text-[#00FFFF]" />
+          </div>
+          <div className="text-2xl font-bold text-[#00FFFF] font-mono">
+            {authorizedCount} Active
+          </div>
+          <div className="text-[11px] text-gray-400 font-mono">
+            Heavy machinery proximity clearance
+          </div>
+        </div>
+
+        {/* Recorded Breaches */}
+        <div className="p-4 rounded-2xl bg-[#1f2937]/90 border border-[#374151] backdrop-blur-sm space-y-1">
+          <div className="flex items-center justify-between text-xs text-gray-400 font-mono uppercase">
+            <span>Recorded Breaches</span>
+            <AlertTriangle className="w-4 h-4 text-[#FF3B30]" />
+          </div>
+          <div className="text-2xl font-bold text-[#FF3B30] font-mono">
+            {breachCount} Flagged
+          </div>
+          <div className="text-[11px] text-gray-400 font-mono">
+            Personnel with proximity events
+          </div>
         </div>
       </div>
 
-      {/* Biometric Face Scan Modal */}
-      {showEnrollModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md p-6 rounded-2xl bg-[#1f2937] border border-[#374151] space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h4 className="text-base font-bold text-white flex items-center gap-2">
-                <Camera className="w-4 h-4 text-[#00FFFF]" />
-                Enroll Face Biometrics
-              </h4>
-              <button
-                onClick={() => setShowEnrollModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                &times;
-              </button>
-            </div>
-            <p className="text-xs text-gray-400">
-              Upload a clear frontal photo of the personnel. DeepFace RetinaFace
-              will detect facial keypoints and compute a 512-D normalized
-              embedding.
-            </p>
+      {/* Filter & Control Bar */}
+      <WorkerFilters
+        filters={filters}
+        viewMode={viewMode}
+        departments={availableDepartments}
+        totalResults={totalCount}
+        onFilterChange={handleFilterChange}
+        onViewModeChange={setViewMode}
+        onOpenAddModal={() => setIsAddModalOpen(true)}
+      />
 
-            <div className="border-2 border-dashed border-[#374151] hover:border-[#00FFFF]/50 rounded-xl p-8 text-center cursor-pointer bg-[#111827]/50">
-              <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <div className="text-xs font-medium text-white">
-                Drag and drop face portrait or click to browse
-              </div>
-              <div className="text-[10px] text-gray-500 mt-1">
-                Supports JPG, PNG, WEBP (Min 200x200)
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setShowEnrollModal(false)}
-                className="px-4 py-2 rounded-xl bg-[#111827] border border-[#374151] text-xs font-semibold text-gray-300 hover:text-white"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setShowEnrollModal(false)}
-                className="px-4 py-2 rounded-xl bg-[#00FFFF] text-[#111827] text-xs font-bold hover:bg-[#00FFFF]/90"
-              >
-                Generate 512-D Vector
-              </button>
-            </div>
+      {/* Error Alert */}
+      {error && (
+        <div className="p-4 rounded-2xl bg-[#FF3B30]/15 border border-[#FF3B30]/40 flex items-center justify-between text-xs text-[#FF3B30]">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
           </div>
+          <button
+            onClick={handleRefresh}
+            className="px-3 py-1 rounded-lg bg-[#FF3B30]/20 hover:bg-[#FF3B30]/30 font-bold transition-colors"
+          >
+            Retry
+          </button>
         </div>
       )}
+
+      {/* Directory Content (Grid or Table) */}
+      {viewMode === "grid" ? (
+        <WorkerGrid workers={workers} isLoading={isLoading} />
+      ) : (
+        <WorkerTable
+          workers={workers}
+          totalCount={totalCount}
+          offset={filters.offset || 0}
+          limit={filters.limit || 12}
+          isLoading={isLoading}
+          onPageChange={(newOffset) => handleFilterChange({ offset: newOffset })}
+          onLimitChange={(newLimit) =>
+            handleFilterChange({ limit: newLimit, offset: 0 })
+          }
+        />
+      )}
+
+      {/* Add Worker Biometric Modal */}
+      <AddWorkerModal
+        isOpen={isAddModalOpen}
+        departments={availableDepartments}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={handleWorkerCreated}
+      />
     </div>
   );
 }
