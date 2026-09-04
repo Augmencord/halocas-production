@@ -5,9 +5,21 @@ from app.services.notification import (
     NotificationService,
     RateLimitExceededError,
 )
+from app.services.storage import (
+    InvalidObjectKeyError,
+    StorageDeleteError,
+    StorageError,
+    StorageService,
+    StorageUploadError,
+)
 
 __all__ = [
+    "InvalidObjectKeyError",
     "NotificationError",
     "NotificationService",
     "RateLimitExceededError",
+    "StorageDeleteError",
+    "StorageError",
+    "StorageService",
+    "StorageUploadError",
 ]
