@@ -1,0 +1,56 @@
+[
+  {
+    "face_id": "face_0001",
+    "source_video": "04_industrial_site_safety.mp4",
+    "frame_number": 330,
+    "timestamp_seconds": 11.01,
+    "embedding_path": "backend/demo_data/faces/embeddings/face_0001.npy",
+    "crop_path": "backend/demo_data/faces/face_0001.jpg",
+    "confidence": 1.0
+  },
+  {
+    "face_id": "face_0002",
+    "source_video": "04_industrial_site_safety.mp4",
+    "frame_number": 720,
+    "timestamp_seconds": 24.02,
+    "embedding_path": "backend/demo_data/faces/embeddings/face_0002.npy",
+    "crop_path": "backend/demo_data/faces/face_0002.jpg",
+    "confidence": 1.0
+  },
+  {
+    "face_id": "face_0003",
+    "source_video": "04_industrial_site_safety.mp4",
+    "frame_number": 1320,
+    "timestamp_seconds": 44.04,
+    "embedding_path": "backend/demo_data/faces/embeddings/face_0003.npy",
+    "crop_path": "backend/demo_data/faces/face_0003.jpg",
+    "confidence": 1.0
+  },
+  {
+    "face_id": "face_0004",
+    "source_video": "05_warehouse_forklift_worker.mp4",
+    "frame_number": 30,
+    "timestamp_seconds": 1.0,
+    "embedding_path": "backend/demo_data/faces/embeddings/face_0004.npy",
+    "crop_path": "backend/demo_data/faces/face_0004.jpg",
+    "confidence": 1.0
+  },
+  {
+    "face_id": "face_0005",
+    "source_video": "05_warehouse_forklift_worker.mp4",
+    "frame_number": 270,
+    "timestamp_seconds": 9.0,
+    "embedding_path": "backend/demo_data/faces/embeddings/face_0005.npy",
+    "crop_path": "backend/demo_data/faces/face_0005.jpg",
+    "confidence": 1.0
+  },
+  {
+    "face_id": "face_0006",
+    "source_video": "05_warehouse_forklift_worker.mp4",
+    "frame_number": 390,
+    "timestamp_seconds": 13.0,
+    "embedding_path": "backend/demo_data/faces/embeddings/face_0006.npy",
+    "crop_path": "backend/demo_data/faces/face_0006.jpg",
+    "confidence": 1.0
+  }
+]
