@@ -13,12 +13,36 @@ from typing import Any
 
 import cv2
 import numpy as np
-from deepface import DeepFace
 
 from app.config import get_settings
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+class _LazyDeepFace:
+    """Lazy loader proxy for DeepFace to prevent eager TensorFlow initialization on module import."""
+
+    _module: Any = None
+
+    def _get_module(self) -> Any:
+        if self._module is None:
+            import deepface.DeepFace as df_mod
+
+            self._module = df_mod
+        return self._module
+
+    def build_model(self, *args: Any, **kwargs: Any) -> Any:
+        return self._get_module().build_model(*args, **kwargs)
+
+    def represent(self, *args: Any, **kwargs: Any) -> Any:
+        return self._get_module().represent(*args, **kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._get_module(), name)
+
+
+DeepFace = _LazyDeepFace()
 
 
 class FaceVerificationError(Exception):
