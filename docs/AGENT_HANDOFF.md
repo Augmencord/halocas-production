@@ -303,4 +303,27 @@ The production database seeding script establishes core operational personnel an
   - Audited and verified `mypy .` and `ruff check .` from repo root: 65 source files checked with 0 errors.
   - Verified full test suite: 113/113 pytest tests passing (84% code coverage).
 
+### H. Comprehensive Unit Testing & Code Coverage Expansion (88% Target Achieved)
+- **Requirement:** Ensure every module has comprehensive unit tests with $\ge 85\%$ code coverage across all 10 target files:
+  1. `tests/test_config.py` (100% coverage)
+  2. `tests/test_detector.py` (98% coverage)
+  3. `tests/test_face_verifier.py` (88% coverage)
+  4. `tests/test_state_machine.py` (97% coverage)
+  5. `tests/test_buffer.py` (96% coverage)
+  6. `tests/test_notification.py` (87% coverage)
+  7. `tests/test_storage.py` (97% coverage)
+  8. `tests/test_pipeline.py` (86% coverage)
+  9. `tests/test_models.py` (100% coverage across all models, base, and user)
+  10. `tests/test_auth.py` (100% coverage across security, deps, routes/auth, and 90% session)
+- **New Unit Test Implementation:**
+  - Authored `backend/tests/test_auth.py` with comprehensive unit test cases covering bcrypt hashing, corrupted hash handling, JWT encoding/decoding, expired token errors, custom claims, async database session generators, dependency injection, and RBAC authorization.
+  - Enhanced `backend/tests/test_models.py` with user representation and generic declarative base representation tests.
+  - Enhanced `backend/tests/test_health.py` with application lifespan verification and global 500 unhandled exception handling.
+- **Verification Results:**
+  - `pytest --cov=app --cov-report=term-missing`: **141/141 passed in 14.54s**
+  - **Overall Code Coverage:** **88%** (2,102 statements, 245 missed = 88.34%) exceeding the $\ge 85\%$ threshold.
+  - `ruff check`: All checks passed.
+  - `mypy`: Success, no issues found in 58 source files.
+- **Active Background Tasks:** `0` (all test runs and background tasks exited cleanly with code 0).
+
 
