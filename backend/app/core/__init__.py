@@ -1,5 +1,22 @@
 """HALOCAS Core Module."""
 
+from app.core.detector import (
+    DetectionResult,
+    Detector,
+    DetectorError,
+    InferenceError,
+    InvalidFrameError,
+    ModelLoadError,
+)
 from app.core.logging import get_logger, setup_logging
 
-__all__ = ["setup_logging", "get_logger"]
+__all__ = [
+    "DetectionResult",
+    "Detector",
+    "DetectorError",
+    "InferenceError",
+    "InvalidFrameError",
+    "ModelLoadError",
+    "get_logger",
+    "setup_logging",
+]

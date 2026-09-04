@@ -73,7 +73,9 @@ ignore = [
 known-first-party = ["app"]
 
 [tool.mypy]
-python_version = "3.11"
+exclude = [
+    "^\\.venv",
+]
 warn_return_any = true
 warn_unused_configs = false
 disallow_untyped_defs = true
