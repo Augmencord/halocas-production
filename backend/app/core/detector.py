@@ -77,6 +77,7 @@ class Detector:
         conf_threshold: float = 0.4,
         frame_skip: int = 1,
         device: str = "cpu",
+        classes_map: dict[int, str] | None = None,
     ) -> None:
         """Initialize the YOLOv8 detector and run warm-up inference.
 
@@ -85,6 +86,7 @@ class Detector:
             conf_threshold: Minimum confidence score required to retain detection (>= 0.4).
             frame_skip: Process every Nth frame; skipped frames return cached detections.
             device: Target hardware accelerator ('cpu', 'cuda', 'mps').
+            classes_map: Optional mapping of COCO class IDs to target class names (default: {0: 'person', 7: 'truck'}).
 
         Raises:
             ValueError: If frame_skip < 1 or conf_threshold is not in [0.0, 1.0].
@@ -101,6 +103,8 @@ class Detector:
             raise ValueError(f"frame_skip must be an integer >= 1, got {frame_skip}")
         self.frame_skip = frame_skip
         self.device = device
+        self.classes_map: dict[int, str] = classes_map if classes_map is not None else dict(self.CLASS_NAMES)
+        self.target_classes: list[int] = sorted(self.classes_map.keys())
 
         self._frame_count: int = 0
         self._last_results: list[DetectionResult] = []
@@ -133,7 +137,7 @@ class Detector:
             start_time = time.perf_counter()
             self.model.predict(
                 source=blank_frame,
-                classes=[0, 7],
+                classes=self.target_classes,
                 verbose=False,
                 device=self.device,
             )
@@ -189,7 +193,7 @@ class Detector:
         try:
             results = self.model.track(
                 source=frame,
-                classes=[0, 7],
+                classes=self.target_classes,
                 tracker="bytetrack.yaml",
                 persist=True,
                 verbose=False,
@@ -233,7 +237,7 @@ class Detector:
 
                     raw_cls = cls[i]
                     cls_id = int(raw_cls) if hasattr(raw_cls, "__int__") else int(raw_cls.item())
-                    class_name = self.CLASS_NAMES.get(cls_id, f"class_{cls_id}")
+                    class_name = self.classes_map.get(cls_id, self.CLASS_NAMES.get(cls_id, f"class_{cls_id}"))
 
                     track_id: int | None = None
                     if track_ids is not None and track_ids[i] is not None:

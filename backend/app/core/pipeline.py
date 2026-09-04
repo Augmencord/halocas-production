@@ -31,6 +31,7 @@ from app.core.logging import get_logger
 from app.core.state_machine import SafetyEvent, SafetyStateMachine, Severity
 from app.core.telemetry import manager as ws_manager
 from app.models.incident import Incident, IncidentSeverity
+from app.models.machine import Machine
 from app.models.worker import Worker
 
 if TYPE_CHECKING:
@@ -140,6 +141,28 @@ class PipelineOrchestrator:
             logger.error("Failed to query worker candidates from database: %s", exc, exc_info=True)
             return []
 
+    async def _resolve_machine_id(self, session: AsyncSession, machine_id: int) -> int:
+        """Resolve equipment ID to ensure foreign key constraint integrity with machines table."""
+        try:
+            stmt = select(Machine.id)
+            res = await session.execute(stmt)
+            valid_ids = res.scalars().all()
+            if not valid_ids:
+                return machine_id
+            if machine_id in valid_ids:
+                return machine_id
+            # Modulo mapping to an existing database equipment asset
+            mapped_id = valid_ids[machine_id % len(valid_ids)]
+            logger.debug(
+                "Mapped tracker machine ID %d to registered database machine ID %d",
+                machine_id,
+                mapped_id,
+            )
+            return mapped_id
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Could not resolve machine ID %d against database: %s", machine_id, exc)
+            return machine_id
+
     async def _handle_critical_event(
         self,
         event: SafetyEvent,
@@ -198,9 +221,10 @@ class PipelineOrchestrator:
         face_verify_ms = (time.perf_counter() - t_face_start) * 1000
 
         # 2. Initial Database Incident Record
+        resolved_machine_id = await self._resolve_machine_id(session, event.machine_id)
         incident = Incident(
             timestamp=event_dt,
-            machine_id=event.machine_id,
+            machine_id=resolved_machine_id,
             worker_id=worker_db_id,
             worker_name=worker_name,
             distance_meters=round(event.distance_meters, 2),

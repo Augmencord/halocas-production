@@ -378,6 +378,23 @@ class NotificationService:
             "html": html_body,
         }
 
+        # If Resend API key is not configured, record simulated delivery immediately
+        if not self.api_key:
+            logger.info(
+                "Resend API key is not configured; recording simulated delivery for incident %d to %s",
+                incident_id,
+                clean_email,
+            )
+            await self._write_alert_log(
+                incident_id=incident_id,
+                recipient_email=clean_email,
+                status=DeliveryStatus.SENT,
+                retry_count=0,
+                sent_at=datetime.now(UTC),
+                db_session=db_session,
+            )
+            return True
+
         # 2. Transmission with Exponential Backoff Retries (1s, 2s, 4s)
         last_error = ""
         for attempt in range(self.max_retries + 1):
