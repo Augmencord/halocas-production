@@ -1,5 +1,14 @@
 """HALOCAS Core Module."""
 
+from app.core.buffer import (
+    BufferError,
+    BufferManager,
+    CameraNotFoundError,
+    ClipExportError,
+    FrameEntry,
+    RollingFrameBuffer,
+    burn_timestamp_overlay,
+)
 from app.core.detector import (
     DetectionResult,
     Detector,
@@ -21,18 +30,25 @@ from app.core.state_machine import (
 )
 
 __all__ = [
+    "BufferError",
+    "BufferManager",
+    "CameraNotFoundError",
+    "ClipExportError",
     "DetectionResult",
     "Detector",
     "DetectorError",
     "FaceEnrollmentError",
     "FaceVerificationError",
     "FaceVerifier",
+    "FrameEntry",
     "InferenceError",
     "InvalidFrameError",
     "ModelLoadError",
+    "RollingFrameBuffer",
     "SafetyEvent",
     "SafetyStateMachine",
     "Severity",
+    "burn_timestamp_overlay",
     "get_logger",
     "setup_logging",
 ]
