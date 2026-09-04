@@ -44,6 +44,7 @@ import {
   IncidentItem,
   WorkerAlertPoint,
 } from "@/lib/api";
+import { VideoPlayer } from "@/components/VideoPlayer";
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -700,34 +701,25 @@ export default function WorkerDetailPage(): React.JSX.Element {
               </button>
             </div>
 
-            <div className="relative aspect-video rounded-2xl bg-black border border-[#374151] overflow-hidden flex items-center justify-center">
-              {activeClip.clip_url ? (
-                <video
-                  src={activeClip.clip_url}
-                  controls
-                  autoPlay
-                  className="w-full h-full object-contain"
-                >
-                  Your browser does not support HTML5 video streaming.
-                </video>
-              ) : (
-                <div className="text-center space-y-2 p-6">
-                  <Video className="w-12 h-12 text-gray-600 mx-auto" />
-                  <div className="text-sm font-semibold text-gray-300">
-                    H.264 Buffer Stream Unavailable
-                  </div>
-                  <div className="text-xs text-gray-500 font-mono">
-                    Incident #{activeClip.id} logged in telemetry database
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-gray-400 font-mono pt-2">
-              <span>Machinery: CAT-797F-0{activeClip.machine_id}</span>
-              <span>Proximity: {activeClip.distance_meters.toFixed(1)}m</span>
-              <span>Severity: {activeClip.severity}</span>
-            </div>
+            <VideoPlayer
+              src={activeClip.clip_url}
+              incidentId={activeClip.id}
+              title={`INCIDENT #${activeClip.id} - CAT-797F-0${activeClip.machine_id}`}
+              fps={30}
+              autoPlay
+              markers={[
+                {
+                  time: 1.5,
+                  label: `Proximity Vector: ${activeClip.distance_meters.toFixed(1)}m`,
+                  color: activeClip.severity === "CRITICAL" ? "red" : "amber",
+                  description: `Severity: ${activeClip.severity} · Closing Velocity: ${
+                    activeClip.closing_velocity
+                      ? `${activeClip.closing_velocity.toFixed(1)} m/s`
+                      : "Stationary"
+                  }`,
+                },
+              ]}
+            />
           </div>
         </div>
       )}

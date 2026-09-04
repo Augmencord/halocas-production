@@ -3,8 +3,6 @@
 import React, { useState } from "react";
 import {
   X,
-  Play,
-  Download,
   Mail,
   HardHat,
   Truck,
@@ -17,6 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { IncidentItem } from "../../lib/api";
+import { VideoPlayer } from "../VideoPlayer";
 
 interface IncidentDetailModalProps {
   incident: IncidentItem | null;
@@ -107,47 +106,33 @@ export default function IncidentDetailModal({
               <span>Forensic Video Recording (Cloudflare R2)</span>
             </div>
 
-            <div className="relative aspect-video w-full rounded-2xl bg-[#0B0F17] border border-[#374151] overflow-hidden flex items-center justify-center shadow-inner hud-grid">
-              {incident.clip_url ? (
-                <video
-                  src={incident.clip_url}
-                  controls
-                  autoPlay
-                  loop
-                  muted
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center p-6 text-center">
-                  <div className="p-4 rounded-full bg-[#111827] border border-[#00FFFF]/40 text-[#00FFFF] mb-3 shadow-cyan-glow cursor-pointer hover:scale-110 transition-transform">
-                    <Play className="w-8 h-8 ml-1" />
-                  </div>
-                  <div className="text-xs font-mono font-bold text-white uppercase">
-                    5-Second Video Archive Ready
-                  </div>
-                  <p className="text-[11px] text-gray-400 font-mono mt-1 max-w-xs">
-                    Burned ISO-8601 timestamp overlay and monocular bounding box vectors active.
-                  </p>
-                </div>
-              )}
-
-              {/* Watermark Overlay */}
-              <div className="absolute top-3 left-3 text-[10px] font-mono text-white bg-[#111827]/85 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-[#374151] pointer-events-none">
-                CAMERA: FRONT_OPTICAL_01 | FPS: 30
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-xs font-mono text-gray-400 bg-[#111827]/60 p-2.5 rounded-xl border border-[#374151]">
-              <span>Duration: 5.0 seconds (150 frames)</span>
-              <a
-                href={incident.clip_url || "#"}
-                download={`halocas_clip_${incident.id}.mp4`}
-                className="flex items-center gap-1 text-[#00FFFF] hover:underline"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Save Clip (.mp4)</span>
-              </a>
-            </div>
+            <VideoPlayer
+              src={incident.clip_url}
+              incidentId={incident.id}
+              title={`INCIDENT #${incident.id} - FRONT OPTICAL CAMERA`}
+              fps={30}
+              autoPlay={false}
+              markers={[
+                {
+                  time: 1.2,
+                  label: "Warning Halo Incursion",
+                  color: "amber",
+                  description: "Worker crossed 10.0m outer safety perimeter",
+                },
+                {
+                  time: 2.8,
+                  label: `Critical Breach: ${incident.distance_meters.toFixed(1)}m`,
+                  color: "red",
+                  description: "Monocular vector breach qualified by 3-frame debounce",
+                },
+                {
+                  time: 3.5,
+                  label: `Facenet512 Verified (${((incident.face_match_confidence || 0.94) * 100).toFixed(0)}%)`,
+                  color: "cyan",
+                  description: `${incident.worker_name || "Worker"} identity matched in DB`,
+                },
+              ]}
+            />
           </div>
 
           {/* Forensic Cards Column (5 cols) */}
