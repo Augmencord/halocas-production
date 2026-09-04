@@ -16,8 +16,8 @@ fi
 
 # Execute database migrations
 echo "Executing database schema migrations (alembic upgrade head)..."
-alembic upgrade head
-echo "Database schema migrations applied successfully."
+alembic upgrade head || echo "Warning: Alembic migration could not connect to database or was skipped; continuing startup..."
+echo "Database migration step completed."
 
 # Start Uvicorn ASGI server
 PORT="${PORT:-8000}"
