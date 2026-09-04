@@ -8,7 +8,7 @@ from app.config import Settings, get_settings
 
 def test_default_settings() -> None:
     """Verify default values comply with HALOCAS safety requirements."""
-    settings = Settings()
+    settings = Settings(_env_file=None)
 
     assert settings.APP_NAME == "HALOCAS - Collision Avoidance System"
     assert settings.DATABASE_URL == "postgresql+asyncpg://localhost/halocas"

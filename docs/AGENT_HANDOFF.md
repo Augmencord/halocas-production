@@ -257,7 +257,25 @@ Extracted using DeepFace RetinaFace detection and Facenet512 embedding:
   - `task-2195` (`pytest backend/tests/`): Completed (exit code 0, 113/113 passed).
 
 ### D. Automated Quality Verification Results
-- **Pytest:** `113 passed, 1 warning in 6.67s` (100% pass rate)
-- **Ruff:** `All checks passed!`
-- **Mypy:** `Success: no issues found in 3 source files`
+- **Pytest:** `113 passed, 1 warning in 6.41s` (100% pass rate)
+- **Ruff:** `All checks passed!` across all backend modules and scripts
+- **Mypy:** `Success: no issues found in 5 source files`
 - **GitHub Actions CI:** Fully green on `main` branch.
+
+### E. Production Database Seeding (`backend/scripts/seed_production.py`)
+The production database seeding script establishes core operational personnel and equipment:
+- **Database Target:** Asynchronous PostgreSQL (`halocas_db` on `localhost:5432`)
+- **Seeded Workers (5 Verified Personnel):**
+  1. **Rajesh Kumar** (ID=1): Drill Operator (`Drill & Blast`), Supervisor: `mine_supervisor@halocas.demo`, 512-D Facenet512 vector, Hazard Zone: Alarm (`is_authorized=False`)
+  2. **Amit Sharma** (ID=2): Loader Driver (`Operations`), Supervisor: `mine_supervisor@halocas.demo`, 512-D Facenet512 vector, Hazard Zone: Alarm (`is_authorized=False`)
+  3. **Priya Singh** (ID=3): Safety Inspector (Authorized Mechanic, `Health & Safety`), Supervisor: `safety_head@halocas.demo`, 512-D Facenet512 vector, Hazard Zone: Authorized Clear (`is_authorized=True`)
+  4. **Suresh Patel** (ID=4): General Worker (`Operations`), Supervisor: `mine_supervisor@halocas.demo`, 512-D Facenet512 vector, Hazard Zone: Alarm (`is_authorized=False`)
+  5. **Neha Gupta** (ID=5): Blasting Technician (`Drill & Blast`), Supervisor: `safety_head@halocas.demo`, 512-D Facenet512 vector, Hazard Zone: Alarm (`is_authorized=False`)
+- **Seeded Heavy Equipment Fleet (3 Verified Assets):**
+  1. **CAT 793F Haul Truck** (ID=1): Type `haul_truck`, Zone `pit_a`, Status `active`
+  2. **Komatsu PC2000 Excavator** (ID=2): Type `excavator`, Zone `pit_a`, Status `active`
+  3. **Atlas Copco SmartROC D65 Drill** (ID=3): Type `drill`, Zone `underground_b`, Status `active`
+- **Biometrics & Storage Persistence:**
+  - Facial embeddings loaded from `.npy` files and persisted as 512-float arrays in the `workers.face_embedding` column.
+  - Portraits referenced via canonical Cloudflare R2 URLs (`workers/photos/{slug}_{face_id}.jpg`).
+

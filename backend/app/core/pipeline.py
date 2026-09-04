@@ -17,7 +17,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
@@ -32,8 +32,10 @@ from app.core.state_machine import SafetyEvent, SafetyStateMachine, Severity
 from app.core.telemetry import manager as ws_manager
 from app.models.incident import Incident, IncidentSeverity
 from app.models.worker import Worker
-from app.services.notification import NotificationService
-from app.services.storage import StorageService
+
+if TYPE_CHECKING:
+    from app.services.notification import NotificationService
+    from app.services.storage import StorageService
 
 logger = get_logger("halocas.core.pipeline")
 
