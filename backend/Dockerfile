@@ -46,7 +46,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin" \
-    PYTHONPATH="/app"
+    PYTHONPATH="/app" \
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    TF_ENABLE_ONEDNN_OPTS=0 \
+    TF_CPP_MIN_LOG_LEVEL=3 \
+    SKIP_FACE_WARMUP=1 \
+    MALLOC_ARENA_MAX=2
 
 WORKDIR /app
 

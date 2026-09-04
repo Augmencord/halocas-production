@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         detector._warmup()
         face_verifier = get_face_verifier()
         face_verifier._warmup()
-        logger.info("Machine learning models (YOLO & DeepFace) warmed up successfully")
+        logger.info("Computer vision models (YOLO & FaceVerifier) initialized")
     except Exception as exc:  # noqa: BLE001
         logger.warning("Model warm-up skipped or encountered non-fatal warning: %s", exc)
 

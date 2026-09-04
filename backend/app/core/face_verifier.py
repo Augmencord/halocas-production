@@ -64,6 +64,9 @@ class FaceVerifier:
 
     def _warmup(self) -> None:
         """Pre-cache neural weights and prime computational graphs."""
+        if os.getenv("SKIP_FACE_WARMUP", "0") == "1":
+            logger.info("FaceVerifier warmup deferred (container memory optimization active)")
+            return
         try:
             logger.info("Executing FaceVerifier model pre-caching for %s", self.model_name)
             DeepFace.build_model(model_name=self.model_name)
