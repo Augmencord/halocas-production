@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: halocas-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: R2_ENDPOINT
+        sync: false
+      - key: R2_ACCESS_KEY
+        sync: false
+      - key: R2_SECRET_KEY
+        sync: false
+      - key: R2_BUCKET
+        value: halocas-clips
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SMTP_SENDER
+        value: alerts@halocas.safety
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRY_MINUTES
+        value: 30
+      - key: YOLO_MODEL_PATH
+        value: yolov8n.pt
+      - key: DEEPFACE_MODEL
+        value: Facenet512
+      - key: SAFETY_CRITICAL_DISTANCE
+        value: "3.0"
+      - key: SAFETY_WARNING_DISTANCE
+        value: "10.0"
+      - key: PIXELS_PER_METER
+        value: "20.0"
+      - key: ALERT_COOLDOWN_SECONDS
+        value: "60"
+      - key: CLIP_DURATION_SECONDS
+        value: "5"
+      - key: FPS
+        value: "30"

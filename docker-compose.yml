@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: halocas-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql+asyncpg://halocas_user:halocas_password@postgres:5432/halocas_db
+      - REDIS_URL=redis://redis:6379/0
+      - R2_BUCKET=halocas-clips
+      - SAFETY_CRITICAL_DISTANCE=3.0
+      - SAFETY_WARNING_DISTANCE=10.0
+      - PIXELS_PER_METER=20.0
+      - ALERT_COOLDOWN_SECONDS=60
+      - CLIP_DURATION_SECONDS=5
+      - FPS=30
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app:ro
+      - ./backend/alembic:/app/alembic:ro
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: halocas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: halocas_user
+      POSTGRES_PASSWORD: halocas_password
+      POSTGRES_DB: halocas_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U halocas_user -d halocas_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: halocas-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
