@@ -320,10 +320,39 @@ The production database seeding script establishes core operational personnel an
   - Enhanced `backend/tests/test_models.py` with user representation and generic declarative base representation tests.
   - Enhanced `backend/tests/test_health.py` with application lifespan verification and global 500 unhandled exception handling.
 - **Verification Results:**
-  - `pytest --cov=app --cov-report=term-missing`: **141/141 passed in 14.54s**
-  - **Overall Code Coverage:** **88%** (2,102 statements, 245 missed = 88.34%) exceeding the $\ge 85\%$ threshold.
-  - `ruff check`: All checks passed.
-  - `mypy`: Success, no issues found in 58 source files.
+  - `pytest --cov=app --cov-report=term-missing`: **151/151 passed in 12.58s** (141 unit tests + 10 integration tests)
+  - **Overall Code Coverage:** **88%** (2,102 statements, 242 missed = 88.49%) exceeding the $\ge 85\%$ threshold.
+  - `ruff check`: All checks passed with 0 errors.
+  - `mypy`: Success, no issues found in 64 source files.
 - **Active Background Tasks:** `0` (all test runs and background tasks exited cleanly with code 0).
+
+### I. Comprehensive End-to-End Integration Testing Suite (`backend/tests/integration/`)
+- **Suite Purpose:** Autonomous end-to-end integration validation verifying asynchronous multi-component data pipelines, biometric linkage, circular buffer clip export, Cloudflare R2 presigned storage, supervisor notification dispatch, and transactional database integrity without external cloud dependencies.
+- **Architectural Implementation Details:**
+  1. `conftest.py`:
+     - Isolated in-memory async SQLite engine with pre-generated DDL schema (`sqlite+aiosqlite:///:memory:`).
+     - Deterministic mock `StorageService` for R2 object key generation (`clips/cam_{camera_id}/incident_{id}.mp4`), mock video clip uploads, and presigned URL minting.
+     - Deterministic mock `NotificationService` capturing outgoing email payloads, rate limit states, and persisting `AlertLog` entries with `DeliveryStatus.SENT`.
+     - Synthetic BGR video frames (640x480x3 uint8) simulating mining/construction environments.
+     - Authenticated ASGI `AsyncClient` preloaded with valid JWT administrative credentials.
+  2. `test_detection_to_alert.py`:
+     - `test_end_to_end_detection_to_alert_pipeline`: Ingests synthetic frame with worker and haul truck within critical radius (<3m). Validates YOLO detection $\rightarrow$ `SafetyStateMachine` critical state transition $\rightarrow$ biometric verification $\rightarrow$ circular buffer clip export $\rightarrow$ R2 upload $\rightarrow$ transactional incident row insertion $\rightarrow$ `AlertLog` row persistence $\rightarrow$ supervisor notification dispatch.
+     - `test_safe_frame_produces_no_incidents_or_alerts`: Validates baseline nominal operation with safe worker distance (>10m), confirming zero spurious alerts or database writes.
+  3. `test_face_to_notification.py`:
+     - `test_known_face_embedding_matches_and_notifies_designated_supervisor`: Ingests frame with worker in danger zone; extracts 512-D embedding; matches against database worker ("Amit Sharma"); verifies notification is routed strictly to the designated supervisor (`haulage_supervisor@halocas.safety`) rather than fallback addresses.
+     - `test_unidentified_worker_falls_back_to_generic_alert`: Simulates obscured face/hardhat/dust; verifies pipeline issues generic worker tracking identifier ("Worker #888"), logs critical incident, and falls back to default safety supervisor email.
+  4. `test_clip_lifecycle.py`:
+     - `test_complete_clip_lifecycle_buffer_export_upload_record`: Verifies circular buffer accumulation (30 frames), incident triggered video export (`.mp4`), Cloudflare R2 upload with canonical key, database `Incident.clip_url` persistence, and 1-hour presigned playback URL generation.
+     - `test_multi_camera_concurrent_clip_isolation`: Verifies buffer concurrency and frame stream isolation across multiple camera IDs (`cam-north-pit` vs. `cam-south-crusher`), ensuring no frame leakage or buffer index corruption.
+  5. `test_api_crud.py`:
+     - `test_worker_full_crud_lifecycle`: Verifies worker creation (`POST /api/v1/workers`), profile retrieval (`GET /api/v1/workers/{id}`), metadata update (`PUT /api/v1/workers/{id}`), and paginated listing (`GET /api/v1/workers`).
+     - `test_worker_face_enrollment_api_endpoint`: Verifies multipart JPEG upload (`POST /api/v1/workers/{id}/enroll-face`), 512-D DeepFace embedding vector extraction, R2 portrait photo storage, and `FaceEnrollResponse` schema validation.
+     - `test_incidents_filtering_and_statistics_endpoints`: Verifies incident queries by severity (`CRITICAL`), equipment filtering (`machine_id`), `X-Total-Count` pagination headers, and aggregate incident analytics (`/api/v1/incidents/stats`).
+     - `test_crud_error_states_and_not_found`: Validates HTTP 404 on missing entities and HTTP 422 on schema validation failures.
+- **Verification Results:**
+  - `pytest backend/tests/integration/ -v`: **10/10 passed in 2.28s**.
+  - Combined suite (`pytest --cov=app --cov-report=term-missing`): **151/151 passed**, **88% code coverage** (2,102 statements, 242 missed).
+  - Code hygiene: `ruff check` passed (0 issues), `mypy` passed (64 source files checked, 0 errors).
+
 
 
