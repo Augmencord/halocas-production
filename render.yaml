@@ -14,7 +14,9 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: halocas-db
+          property: connectionString
       - key: R2_ENDPOINT
         sync: false
       - key: R2_ACCESS_KEY
@@ -49,3 +51,10 @@ services:
         value: "5"
       - key: FPS
         value: "30"
+
+databases:
+  - name: halocas-db
+    plan: free
+    region: oregon
+    databaseName: halocas
+    user: halocas_user

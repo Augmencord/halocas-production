@@ -1,0 +1,34 @@
+# Python byte-code and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# Testing and code quality caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.log
+
+# Local environmental secrets and configurations
+.env
+.env.*
+!.env.example
+
+# Large media assets not needed in base runtime image
+demo_data/videos/*.mp4
+demo_data/annotated/*.mp4
+
+# Git and IDE metadata
+.git/
+.github/
+.vscode/
+.idea/

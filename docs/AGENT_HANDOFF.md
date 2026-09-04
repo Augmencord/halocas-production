@@ -393,6 +393,25 @@ The production database seeding script establishes core operational personnel an
      - `test-frontend`: Next.js 14 production bundle build and `npm test`.
 - **Validation:** Both YAML configurations validated with zero syntax or indentation errors via PyYAML.
 
+### L. Production Render Deployment Architecture & Containerization
+- **Artifacts Created & Configured:**
+  1. `backend/Dockerfile`: Hardened multi-stage build:
+     - `builder`: Python 3.11-slim with `build-essential`, `libpq-dev`, `gcc`, `curl`, and pre-installed CPU PyTorch/TorchVision wheels (`--index-url https://download.pytorch.org/whl/cpu`) eliminating multi-gigabyte CUDA bloat.
+     - `runner`: Python 3.11-slim with runtime libraries (`libpq5`, `ffmpeg`, `libgl1`, `libglib2.0-0`, `curl`), non-root system user `halocas` (UID 10001), local model `yolov8n.pt`, and active health probe (`curl -f http://localhost:8000/health`).
+  2. `backend/render_start.sh` & `render_start.sh`:
+     - Dialect normalization: Converts Render's `postgres://` or `postgresql://` connection strings to `postgresql+asyncpg://`.
+     - Automatic migration execution: Applies database schema and seeding migrations via `alembic upgrade head`.
+     - Production server startup: Launches `exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"`.
+  3. `backend/.dockerignore`: Clean build context excluding `.venv`, caches (`__pycache__`, `.pytest_cache`, `.mypy_cache`), coverage reports, and large media.
+  4. `render.yaml`: Render Blueprint specification defining:
+     - Web service `halocas-backend` (Docker runtime, free plan, oregon region, `/health` health check).
+     - Free PostgreSQL database `halocas-db` (`plan: free`, `databaseName: halocas`, `user: halocas_user`).
+     - Automatic environment variable binding: `DATABASE_URL` linked to `halocas-db` via `fromDatabase: { name: halocas-db, property: connectionString }`.
+- **Local Verification Results:**
+  - `docker build -t halocas-backend:latest ./backend`: Built successfully in 125s (exit code 0).
+  - Runtime verification: Container started, executed `alembic upgrade head` (`0001_initial_schema` and `0002_seed_data`), started Uvicorn, and responded to `curl.exe http://127.0.0.1:8000/health` with `HTTP/1.1 200 OK` (`{"status":"healthy","service":"halocas-backend","version":"0.1.0"}`).
+
+
 
 
 
