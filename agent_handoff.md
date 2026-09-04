@@ -412,6 +412,16 @@ The production database seeding script establishes core operational personnel an
   - Runtime verification: Container started, executed `alembic upgrade head` (`0001_initial_schema` and `0002_seed_data`), started Uvicorn, and responded to `curl.exe http://127.0.0.1:8000/health` with `HTTP/1.1 200 OK` (`{"status":"healthy","service":"halocas-backend","version":"0.1.0"}`).
 - **Background Processes:** No background processes currently running on the development host. All tasks terminated cleanly.
 
+### M. Production Cloud Deployments (Vercel & Render)
+- **Frontend (Vercel):**
+  - **Live URL:** `https://halocas-production.vercel.app`
+  - **Status:** Deployed and verified via commit `96877ee` with HTTP 200 OK.
+  - **Resolution for Vercel Framework Misidentification:** Vercel initially saw root `pyproject.toml` and misidentified the project as a FastAPI application with error `No FastAPI entrypoint found`. Fixed by providing root Next.js structure and `vercel.json` forcing `"framework": "nextjs"`.
+- **Backend (Render):**
+  - **Requirement:** Must use **Docker Runtime** (`runtime: docker`, `dockerfilePath: ./backend/Dockerfile`, `dockerContext: ./backend`) rather than native Python 3. Native Python fails with `ResolutionImpossible` due to TensorFlow/DeepFace vs Python 3.12 version conflicts and missing OpenCV C-libraries.
+  - **Blueprint Config:** Defined in `render.yaml` with free PostgreSQL database `halocas-db` and `halocas-backend` Docker web service.
+
+
 
 
 
