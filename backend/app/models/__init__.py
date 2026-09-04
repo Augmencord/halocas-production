@@ -7,6 +7,7 @@ from app.models.alert_log import AlertLog, DeliveryStatus
 from app.models.base import Base, TimestampMixin
 from app.models.incident import Incident, IncidentSeverity
 from app.models.machine import Machine
+from app.models.user import User, UserRole
 from app.models.worker import Worker
 
 __all__ = [
@@ -17,5 +18,7 @@ __all__ = [
     "IncidentSeverity",
     "Machine",
     "TimestampMixin",
+    "User",
+    "UserRole",
     "Worker",
 ]
