@@ -4,8 +4,9 @@ from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import Integer, String, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models import (
     AlertLog,
@@ -14,6 +15,8 @@ from app.models import (
     Incident,
     IncidentSeverity,
     Machine,
+    User,
+    UserRole,
     Worker,
 )
 
@@ -163,3 +166,39 @@ async def test_incident_and_alert_log(db_session: AsyncSession) -> None:
     assert alert_log.id is not None
     assert alert_log.delivery_status == DeliveryStatus.SENT
     assert "AlertLog(id=" in repr(alert_log)
+
+
+@pytest.mark.asyncio
+async def test_user_model_and_repr(db_session: AsyncSession) -> None:
+    """Verify user model creation, attributes, and custom __repr__."""
+    user = User(
+        email="test_user@halocas.safety",
+        hashed_password="bcrypt_hash_simulated_token",
+        full_name="Safety Supervisor",
+        role=UserRole.SUPERVISOR,
+        is_active=True,
+        is_superuser=False,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    assert user.id is not None
+    assert user.email == "test_user@halocas.safety"
+    assert user.role == UserRole.SUPERVISOR
+    assert user.is_active is True
+    assert repr(user) == f"<User(id={user.id}, email='test_user@halocas.safety', role=supervisor, active=True)>"
+
+
+def test_base_model_generic_repr() -> None:
+    """Verify generic Base __repr__ on a model without custom __repr__ override."""
+    class SampleEntity(Base):
+        __tablename__ = "sample_entities"
+        id: Mapped[int] = mapped_column(Integer, primary_key=True)
+        name: Mapped[str] = mapped_column(String(50))
+
+    entity = SampleEntity(id=42, name="TestSensor")
+    repr_str = repr(entity)
+    assert "<SampleEntity(" in repr_str
+    assert "id=42" in repr_str
+    assert "name='TestSensor'" in repr_str

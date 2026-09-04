@@ -54,3 +54,31 @@ async def test_not_found_endpoint(async_client: AsyncClient) -> None:
     """Verify that non-existent routes return standard 404 response."""
     response = await async_client.get("/non-existent-route")
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_application_lifespan() -> None:
+    """Verify application startup verification and shutdown cleanup."""
+    from app.main import app, lifespan
+
+    async with lifespan(app):
+        assert app.title is not None
+        assert len(app.routes) > 0
+
+
+@pytest.mark.asyncio
+async def test_global_exception_handler() -> None:
+    """Verify unhandled exception handler returns standardized 500 JSON response."""
+    from unittest.mock import MagicMock
+
+    from fastapi import Request
+
+    from app.main import global_exception_handler
+
+    mock_request = MagicMock(spec=Request)
+    mock_request.method = "GET"
+    mock_request.url.path = "/api/v1/trigger-error"
+
+    response = await global_exception_handler(mock_request, RuntimeError("Simulated crash"))
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert b"InternalServerError" in response.body
