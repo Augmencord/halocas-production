@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HALOCAS — Halo Collision Avoidance System | Project Documentation</title>
+  <meta name="description" content="Complete project documentation for HALOCAS — a real-time Collision Avoidance System and Proximity Detection System engineered for mining safety.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ================================================================
+       DESIGN SYSTEM — Derived from augmencord.github.io references
+       Clean white background, subtle borders, green accents,
+       monospace badges, Inter typography, card-based layout.
+       ================================================================ */
+
+    :root {
+      /* Palette */
+      --bg-page:        #FFFFFF;
+      --bg-section:     #FAFAFA;
+      --bg-card:        #FFFFFF;
+      --bg-code:        #F6F8FA;
+      --bg-badge:       #F0FDF4;
+      --bg-badge-alt:   #EFF6FF;
+      --bg-badge-warn:  #FFFBEB;
+      --bg-badge-red:   #FEF2F2;
+      --bg-toc:         #F9FAFB;
+
+      --border:         #E5E7EB;
+      --border-card:    #E5E7EB;
+      --border-accent:  #10B981;
+      --border-blue:    #3B82F6;
+      --border-orange:  #F59E0B;
+      --border-red:     #EF4444;
+
+      --text-primary:   #111827;
+      --text-secondary: #374151;
+      --text-muted:     #6B7280;
+      --text-light:     #9CA3AF;
+
+      --accent-green:   #10B981;
+      --accent-blue:    #3B82F6;
+      --accent-cyan:    #06B6D4;
+      --accent-orange:  #F59E0B;
+      --accent-red:     #EF4444;
+      --accent-purple:  #8B5CF6;
+
+      /* Typography */
+      --font-body:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono:  'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+
+      /* Spacing */
+      --page-max:   860px;
+      --gap-section: 64px;
+      --gap-card:    24px;
+      --pad-card:    28px;
+      --radius:      8px;
+      --radius-sm:   5px;
+      --radius-pill: 100px;
+
+      /* Print margins */
+      --margin-page-x: 72px;
+      --margin-page-y: 56px;
+    }
+
+    /* ----------------------------------------------------------------
+       RESET & BASE
+       ---------------------------------------------------------------- */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background: var(--bg-page);
+      line-height: 1.75;
+    }
+
+    /* ----------------------------------------------------------------
+       LAYOUT
+       ---------------------------------------------------------------- */
+    .page {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: var(--margin-page-y) var(--margin-page-x);
+    }
+
+    section {
+      margin-bottom: var(--gap-section);
+    }
+
+    /* ----------------------------------------------------------------
+       TYPOGRAPHY
+       ---------------------------------------------------------------- */
+    h1 {
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text-primary);
+    }
+
+    h2 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      font-size: 0.975rem;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    a {
+      color: var(--accent-green);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    strong {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ----------------------------------------------------------------
+       COVER SECTION
+       ---------------------------------------------------------------- */
+    .cover {
+      padding-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cover-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      background: var(--bg-page);
+    }
+
+    .badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      flex-shrink: 0;
+    }
+
+    .badge .dot--blue { background: var(--accent-blue); }
+    .badge .dot--orange { background: var(--accent-orange); }
+    .badge .dot--red { background: var(--accent-red); }
+
+    .cover-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-top: 16px;
+      line-height: 1.7;
+      max-width: 620px;
+    }
+
+    .cover-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-top: 32px;
+      padding: 24px 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-page);
+    }
+
+    .cover-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .cover-meta-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+
+    .cover-meta-value {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .cover-meta-value--green {
+      color: var(--accent-green);
+    }
+
+    /* ----------------------------------------------------------------
+       TABLE OF CONTENTS
+       ---------------------------------------------------------------- */
+    .toc {
+      background: var(--bg-toc);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+    }
+
+    .toc h2 {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+    }
+
+    .toc-list {
+      list-style: none;
+      counter-reset: toc-counter;
+    }
+
+    .toc-list li {
+      counter-increment: toc-counter;
+      padding: 7px 0;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .toc-list li:last-child {
+      border-bottom: none;
+    }
+
+    .toc-list li a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .toc-list li a::before {
+      content: counter(toc-counter, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-light);
+      min-width: 22px;
+    }
+
+    .toc-list li a:hover {
+      color: var(--accent-green);
+      text-decoration: none;
+    }
+
+    /* ----------------------------------------------------------------
+       SECTION HEADERS
+       ---------------------------------------------------------------- */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-green);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .section-label--blue { color: var(--accent-blue); }
+    .section-label--orange { color: var(--accent-orange); }
+    .section-label--red { color: var(--accent-red); }
+    .section-label--purple { color: var(--accent-purple); }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+      max-width: 620px;
+    }
+
+    /* ----------------------------------------------------------------
+       CARDS
+       ---------------------------------------------------------------- */
+    .card {
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius);
+      padding: var(--pad-card);
+      background: var(--bg-card);
+      margin-bottom: var(--gap-card);
+    }
+
+    .card--accent-top {
+      border-top: 3px solid var(--accent-green);
+    }
+
+    .card--accent-top-blue {
+      border-top: 3px solid var(--accent-blue);
+    }
+
+    .card--accent-top-orange {
+      border-top: 3px solid var(--accent-orange);
+    }
+
+    .card--accent-top-red {
+      border-top: 3px solid var(--accent-red);
+    }
+
+    .card--accent-top-purple {
+      border-top: 3px solid var(--accent-purple);
+    }
+
+    .card--accent-top-cyan {
+      border-top: 3px solid var(--accent-cyan);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap-card);
+    }
+
+    .card-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .card-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* ----------------------------------------------------------------
+       FEATURE ROWS (checkmark style from reference)
+       ---------------------------------------------------------------- */
+    .feature-list {
+      list-style: none;
+      margin-top: 16px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .feature-list .check {
+      color: var(--accent-green);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-size: 0.95rem;
+    }
+
+    .feature-list .label {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-right: 4px;
+    }
+
+    /* ----------------------------------------------------------------
+       TABLES
+       ---------------------------------------------------------------- */
+    .table-wrap {
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    thead th {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #F3F4F6;
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody td:first-child {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .cell-green {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .cell-red {
+      color: var(--accent-red);
+      font-weight: 600;
+    }
+
+    .cell-orange {
+      color: var(--accent-orange);
+      font-weight: 600;
+    }
+
+    .cell-blue {
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    /* ----------------------------------------------------------------
+       TAG PILLS (bottom of cards, like reference)
+       ---------------------------------------------------------------- */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #F3F4F6;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: var(--bg-page);
+      letter-spacing: 0.02em;
+    }
+
+    .tag--green {
+      border-color: #A7F3D0;
+      color: var(--accent-green);
+      background: #F0FDF4;
+    }
+
+    .tag--blue {
+      border-color: #BFDBFE;
+      color: var(--accent-blue);
+      background: #EFF6FF;
+    }
+
+    /* ----------------------------------------------------------------
+       FLOW DIAGRAM (CSS-based)
+       ---------------------------------------------------------------- */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 28px 0;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .flow-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 32px;
+      flex-shrink: 0;
+    }
+
+    .flow-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      border: 3px solid #D1FAE5;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    .flow-dot--blue {
+      background: var(--accent-blue);
+      border-color: #DBEAFE;
+    }
+
+    .flow-dot--orange {
+      background: var(--accent-orange);
+      border-color: #FEF3C7;
+    }
+
+    .flow-dot--red {
+      background: var(--accent-red);
+      border-color: #FEE2E2;
+    }
+
+    .flow-connector {
+      width: 2px;
+      flex: 1;
+      min-height: 24px;
+      background: #E5E7EB;
+    }
+
+    .flow-content {
+      padding-bottom: 24px;
+    }
+
+    .flow-content h3 {
+      font-size: 0.98rem;
+      margin-bottom: 4px;
+    }
+
+    .flow-content p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 0;
+    }
+
+    /* ----------------------------------------------------------------
+       STAT CALLOUT
+       ---------------------------------------------------------------- */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .stat-box {
+      text-align: center;
+      padding: 20px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .stat-number--green { color: var(--accent-green); }
+    .stat-number--blue { color: var(--accent-blue); }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+
+    /* ----------------------------------------------------------------
+       CALLOUT / HIGHLIGHT BOXES
+       ---------------------------------------------------------------- */
+    .callout {
+      padding: 20px 24px;
+      border-radius: var(--radius);
+      margin: 20px 0;
+      border-left: 4px solid var(--accent-green);
+      background: #F0FDF4;
+    }
+
+    .callout p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .callout--blue {
+      border-left-color: var(--accent-blue);
+      background: #EFF6FF;
+    }
+
+    .callout--orange {
+      border-left-color: var(--accent-orange);
+      background: #FFFBEB;
+    }
+
+    .callout--red {
+      border-left-color: var(--accent-red);
+      background: #FEF2F2;
+    }
+
+    /* ----------------------------------------------------------------
+       SEPARATOR
+       ---------------------------------------------------------------- */
+    .sep {
+      height: 1px;
+      background: var(--border);
+      margin: var(--gap-section) 0;
+      border: none;
+    }
+
+    /* ----------------------------------------------------------------
+       FOOTER
+       ---------------------------------------------------------------- */
+    .footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text-light);
+      font-size: 0.8rem;
+    }
+
+    .footer a {
+      color: var(--text-muted);
+    }
+
+    /* ----------------------------------------------------------------
+       TIMELINE (from reference design — month-by-month cards)
+       ---------------------------------------------------------------- */
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--gap-card);
+      margin: 24px 0;
+    }
+
+    .timeline-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      border-top: 3px solid var(--accent-green);
+    }
+
+    .timeline-card:nth-child(2) { border-top-color: var(--accent-blue); }
+    .timeline-card:nth-child(3) { border-top-color: var(--accent-orange); }
+
+    .timeline-date {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--accent-green);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .timeline-card:nth-child(2) .timeline-date { color: var(--accent-blue); }
+    .timeline-card:nth-child(3) .timeline-date { color: var(--accent-orange); }
+
+    .timeline-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .timeline-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ----------------------------------------------------------------
+       LAYER DIAGRAM
+       ---------------------------------------------------------------- */
+    .layer-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .layer {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+    }
+
+    .layer-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .layer-icon--green  { background: #D1FAE5; }
+    .layer-icon--blue   { background: #DBEAFE; }
+    .layer-icon--orange { background: #FEF3C7; }
+    .layer-icon--purple { background: #EDE9FE; }
+
+    .layer-body h3 {
+      font-size: 0.92rem;
+      margin-bottom: 2px;
+    }
+
+    .layer-body p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ----------------------------------------------------------------
+       GLOSSARY
+       ---------------------------------------------------------------- */
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 24px;
+    }
+
+    .glossary-item {
+      padding: 8px 0;
+    }
+
+    .glossary-term {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .glossary-def {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ----------------------------------------------------------------
+       PRINT
+       ---------------------------------------------------------------- */
+    @media print {
+      body { font-size: 11pt; }
+      .page { padding: 0; max-width: 100%; }
+      section { page-break-inside: avoid; }
+      .card { break-inside: avoid; }
+      .stat-row, .card-grid, .timeline-grid { break-inside: avoid; }
+    }
+
+    /* ----------------------------------------------------------------
+       RESPONSIVE
+       ---------------------------------------------------------------- */
+    @media (max-width: 768px) {
+      .page { padding: 32px 24px; }
+      h1 { font-size: 2rem; }
+      .card-grid { grid-template-columns: 1fr; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .timeline-grid { grid-template-columns: 1fr; }
+      .cover-meta { flex-direction: column; gap: 16px; }
+      .glossary-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ============================================================
+       SECTION 0 — COVER
+       ============================================================ -->
+  <section class="cover" id="cover">
+    <div class="cover-badges">
+      <span class="badge"><span class="dot"></span> Industrial Computer Vision</span>
+      <span class="badge"><span class="dot dot--blue"></span> CAS / PDS Mining</span>
+      <span class="badge">Production Ready &middot; v1.0</span>
+    </div>
+
+    <h1>HALOCAS<br>Halo Collision Avoidance System</h1>
+
+    <p class="cover-subtitle">
+      A real-time Collision Avoidance System (CAS) and Proximity Detection System (PDS) engineered for heavy surface and underground mining safety. Combines YOLOv8 neural detection with DeepFace biometric identification — built at zero infrastructure cost.
+    </p>
+
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Document Type</span>
+        <span class="cover-meta-value">Project Documentation</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Architecture</span>
+        <span class="cover-meta-value">FastAPI + Next.js + Neon</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">AI Models</span>
+        <span class="cover-meta-value">YOLOv8 + DeepFace</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Status</span>
+        <span class="cover-meta-value cover-meta-value--green">Production Ready ✓</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Cost</span>
+        <span class="cover-meta-value cover-meta-value--green">$0 / month</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Repository</span>
+        <span class="cover-meta-value"><a href="https://github.com/Augmencord/halocas-production" target="_blank">Augmencord/halocas-production</a></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 1 — TABLE OF CONTENTS
+       ============================================================ -->
+  <section id="toc">
+    <div class="toc">
+      <h2>Table of Contents</h2>
+      <ol class="toc-list">
+        <li><a href="#problem">The Problem — Why Mining Safety Needs AI</a></li>
+        <li><a href="#solution">Our Solution — What HALOCAS Does</a></li>
+        <li><a href="#how-it-works">How It Works — Step by Step</a></li>
+        <li><a href="#architecture">System Architecture — The Four Layers</a></li>
+        <li><a href="#features">Key Features of the System</a></li>
+        <li><a href="#tech-stack">Technology Stack — Tools We Used</a></li>
+        <li><a href="#dashboard">The Dashboard — What Supervisors See</a></li>
+        <li><a href="#journey">The Journey — From Prototype to Production</a></li>
+        <li><a href="#comparison">Impact &amp; Value — HALOCAS vs Traditional Systems</a></li>
+        <li><a href="#glossary">Glossary — Simple Definitions</a></li>
+      </ol>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 2 — THE PROBLEM
+       ============================================================ -->
+  <section id="problem">
+    <span class="section-label section-label--red">Part 01</span>
+    <h2>The Problem — Why Mining Safety Needs AI</h2>
+    <p class="section-desc">
+      Mines are among the most dangerous workplaces on Earth. Every year, collisions between workers on foot and massive machines cause fatal accidents that are entirely preventable.
+    </p>
+
+    <p>
+      Picture a <strong>CAT 793F haul truck</strong> — it weighs over 200 tonnes and stands as tall as a two-storey building. The driver sitting in the cabin has <strong>blind spots stretching up to 50 metres</strong> in every direction. A person standing just 15 metres behind the truck is completely invisible to the driver. Now imagine this scenario in thick dust clouds, dim underground tunnels, or during a 12-hour night shift when fatigue sets in.
+    </p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-number">50m</div>
+        <div class="stat-label">Blind Spot Range</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">200t</div>
+        <div class="stat-label">Truck Weight</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">12h</div>
+        <div class="stat-label">Typical Shift</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Visibility in Dust</div>
+      </div>
+    </div>
+
+    <h3>The Four Core Challenges</h3>
+
+    <div class="card-grid">
+      <div class="card card--accent-top-red">
+        <h3 class="card-title">🔲 Blind Spots</h3>
+        <p class="card-text">Heavy mining vehicles have enormous blind zones. Drivers simply cannot see workers nearby from their elevated cabins, especially behind and below the vehicle.</p>
+      </div>
+      <div class="card card--accent-top-orange">
+        <h3 class="card-title">🌫️ Poor Visibility</h3>
+        <p class="card-text">Open-pit mines produce thick dust clouds. Underground mines have near-zero natural light. Rain, fog, and glare make visual awareness unreliable.</p>
+      </div>
+      <div class="card card--accent-top-orange">
+        <h3 class="card-title">😴 Operator Fatigue</h3>
+        <p class="card-text">Workers and drivers operate 12-hour shifts in extreme heat, cold, or noise. Fatigue impairs reaction time, decision-making, and situational awareness.</p>
+      </div>
+      <div class="card card--accent-top-red">
+        <h3 class="card-title">📡 Communication Gaps</h3>
+        <p class="card-text">A safety supervisor stationed 2 km away in the control room has zero real-time awareness of what's happening on the pit floor. By the time a radio call reaches them, it's often too late.</p>
+      </div>
+    </div>
+
+    <div class="callout callout--red">
+      <p><strong>The core question:</strong> How do you keep workers safe when the driver can't see them, dust blocks all visibility, everyone is exhausted, and the supervisor is kilometres away?</p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 3 — OUR SOLUTION
+       ============================================================ -->
+  <section id="solution">
+    <span class="section-label">Part 02</span>
+    <h2>Our Solution — What HALOCAS Does</h2>
+    <p class="section-desc">
+      HALOCAS is a smart camera-based safety system that watches for danger, identifies who is at risk, and instantly alerts the right supervisor — all automatically, all in real time.
+    </p>
+
+    <p>
+      Think of HALOCAS as an <strong>always-awake safety guard</strong> mounted on every piece of heavy machinery. It uses cameras (instead of expensive radar or RFID tags) to continuously monitor the area around the machine. When a worker walks too close, the system:
+    </p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot"></div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <h3>Detects the Worker</h3>
+          <p>AI-powered computer vision spots every person and every machine in the camera feed — even in poor lighting or dusty conditions.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot--blue flow-dot"></div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <h3>Calculates the Distance</h3>
+          <p>The system continuously measures how far each worker is from the machine and whether they are moving closer (a "closing trajectory").</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot--orange flow-dot"></div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <h3>Recognises the Person</h3>
+          <p>Using facial recognition, HALOCAS identifies <em>who</em> the worker is — their name, role, department, and who their supervisor is.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot--red flow-dot"></div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-content">
+          <h3>Captures Video Evidence</h3>
+          <p>A 5-second video clip of the incident is automatically saved — showing exactly what happened, with bounding boxes and distance labels overlaid.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line">
+          <div class="flow-dot"></div>
+        </div>
+        <div class="flow-content">
+          <h3>Alerts the Supervisor</h3>
+          <p>An email is sent immediately to the worker's direct supervisor with the video clip, the worker's name, the distance measured, and the exact timestamp.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><strong>In simple terms:</strong> HALOCAS is like giving every piece of heavy machinery its own pair of intelligent eyes and a direct phone line to the safety supervisor.</p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 4 — HOW IT WORKS
+       ============================================================ -->
+  <section id="how-it-works">
+    <span class="section-label section-label--blue">Part 03</span>
+    <h2>How It Works — Step by Step</h2>
+    <p class="section-desc">
+      The system processes every single camera frame — 30 times per second — through a multi-stage pipeline. Here's what happens inside.
+    </p>
+
+    <div class="card card--accent-top">
+      <h4>Stage 1 — Sensing</h4>
+      <h3 class="card-title">Cameras Capture the Scene</h3>
+      <p class="card-text">Front and rear cameras mounted on the machine stream live video at 1080p resolution, 30 frames per second. This raw video is the starting point for everything.</p>
+    </div>
+
+    <div class="card card--accent-top-blue">
+      <h4>Stage 2 — Detection</h4>
+      <h3 class="card-title">AI Spots People and Machines</h3>
+      <p class="card-text">Each frame is processed by <strong>YOLOv8</strong> (You Only Look Once, version 8) — one of the fastest and most accurate object detection models in the world. It draws a box around every person and every vehicle it sees, and assigns each one a unique tracking ID using <strong>ByteTrack</strong>, so it can follow them across frames.</p>
+    </div>
+
+    <div class="card card--accent-top-orange">
+      <h4>Stage 3 — Safety Evaluation</h4>
+      <h3 class="card-title">The Distance Calculator</h3>
+      <p class="card-text">
+        The <strong>Safety State Machine</strong> takes the detected positions and calculates the distance between each worker and each machine. It also computes the <strong>closing velocity</strong> — whether the gap is shrinking. Based on this, every worker-machine pair is classified into one of three safety states:
+      </p>
+      <ul class="feature-list" style="margin-top: 12px;">
+        <li><span class="check">✓</span> <span><span class="label">SAFE (Green):</span> Worker is more than 10 metres away — no action needed.</span></li>
+        <li><span class="check" style="color: var(--accent-orange);">✓</span> <span><span class="label">WARNING (Amber):</span> Worker is between 3 and 10 metres away — the system watches closely.</span></li>
+        <li><span class="check" style="color: var(--accent-red);">✓</span> <span><span class="label">CRITICAL (Red):</span> Worker is under 3 metres OR is moving towards the machine — immediate alert triggered.</span></li>
+      </ul>
+    </div>
+
+    <div class="card card--accent-top-red">
+      <h4>Stage 4 — Identification</h4>
+      <h3 class="card-title">Who Is at Risk?</h3>
+      <p class="card-text">When a CRITICAL alert fires, <strong>DeepFace</strong> (with the Facenet512 model) extracts the worker's face from the video frame and compares it against all enrolled workers in the database. It generates a <strong>512-dimensional mathematical fingerprint</strong> of the face — unique to each person — and matches it in milliseconds. This tells the system exactly <em>who</em> is in danger and <em>which supervisor</em> to notify.</p>
+    </div>
+
+    <div class="card card--accent-top-purple">
+      <h4>Stage 5 — Response</h4>
+      <h3 class="card-title">Automatic Alert with Evidence</h3>
+      <p class="card-text">Three things happen simultaneously: a <strong>5-second video clip</strong> is trimmed from the rolling buffer and uploaded to cloud storage; an <strong>email with the clip attached</strong> is dispatched to the worker's supervisor; and the incident is permanently <strong>logged in the database</strong> with full details — distance, velocity, severity, timestamp, and worker identity.</p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 5 — ARCHITECTURE
+       ============================================================ -->
+  <section id="architecture">
+    <span class="section-label section-label--purple">Part 04</span>
+    <h2>System Architecture — The Four Layers</h2>
+    <p class="section-desc">
+      HALOCAS is organised into four clean layers, each with a specific job. Think of it like a building — each floor handles one part of the work.
+    </p>
+
+    <div class="layer-stack">
+      <div class="layer">
+        <div class="layer-icon layer-icon--green">📷</div>
+        <div class="layer-body">
+          <h3>Layer 1 — Edge / On-Machine</h3>
+          <p>Front camera, rear camera, and optional radar sensors physically mounted on each piece of heavy machinery. These capture raw video and send it to the processing server.</p>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-icon layer-icon--blue">⚙️</div>
+        <div class="layer-body">
+          <h3>Layer 2 — Processing Server (Backend on Render)</h3>
+          <p>The brain of the system. Runs YOLOv8 detection, ByteTrack tracking, the safety state machine, DeepFace recognition, video clip trimming, and notification dispatch — all inside a FastAPI application.</p>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-icon layer-icon--orange">☁️</div>
+        <div class="layer-body">
+          <h3>Layer 3 — Storage (Cloud Free Tiers)</h3>
+          <p>Neon PostgreSQL stores all worker profiles, machine records, and incident logs. Cloudflare R2 stores video clips. Resend handles email delivery. All at zero cost on their generous free tiers.</p>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-icon layer-icon--purple">🖥️</div>
+        <div class="layer-body">
+          <h3>Layer 4 — Dashboard (Frontend on Vercel)</h3>
+          <p>A beautiful Next.js web application where supervisors can see live camera feeds, monitor active alerts, review incident history, manage worker profiles, and configure safety thresholds.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout--blue">
+      <p><strong>Why this design?</strong> Each layer can be updated, scaled, or replaced independently. The camera doesn't care about the database. The dashboard doesn't care about how detection works. This is called <em>separation of concerns</em> and it makes the system robust and maintainable.</p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 6 — KEY FEATURES
+       ============================================================ -->
+  <section id="features">
+    <span class="section-label">Part 05</span>
+    <h2>Key Features of the System</h2>
+    <p class="section-desc">
+      Every feature was designed to solve a specific real-world problem in mine safety operations.
+    </p>
+
+    <div class="card-grid">
+      <div class="card card--accent-top">
+        <h3 class="card-title">Spatial Proximity Detection</h3>
+        <p class="card-text">YOLOv8 neural tracking of workers and vehicles in real time, with continuous distance calculation between every worker-machine pair.</p>
+        <ul class="feature-list">
+          <li><span class="check">✓</span> <span><span class="label">Detection:</span> Identifies people, trucks, excavators, and loaders</span></li>
+          <li><span class="check">✓</span> <span><span class="label">Tracking:</span> ByteTrack assigns persistent IDs across frames</span></li>
+          <li><span class="check">✓</span> <span><span class="label">Distance:</span> Real-time monocular distance estimation</span></li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">YOLOv8</span>
+          <span class="tag">ByteTrack</span>
+          <span class="tag">30 FPS</span>
+        </div>
+      </div>
+
+      <div class="card card--accent-top-blue">
+        <h3 class="card-title">Biometric Verification</h3>
+        <p class="card-text">DeepFace (Facenet512) authorised operator recognition — the system knows <em>who</em> is near the machine, not just <em>that someone</em> is near it.</p>
+        <ul class="feature-list">
+          <li><span class="check">✓</span> <span><span class="label">512-D Embeddings:</span> Facial geometry fingerprint, not colour matching</span></li>
+          <li><span class="check">✓</span> <span><span class="label">Authorised Override:</span> Known mechanics can suppress alerts</span></li>
+          <li><span class="check">✓</span> <span><span class="label">Accuracy:</span> 99.65% on LFW benchmark</span></li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">DeepFace</span>
+          <span class="tag">Facenet512</span>
+          <span class="tag">RetinaFace</span>
+        </div>
+      </div>
+
+      <div class="card card--accent-top-orange">
+        <h3 class="card-title">Lazy-Proxy Memory Safety</h3>
+        <p class="card-text">DeepFace + TensorFlow can consume 350 MB on import alone. HALOCAS uses lazy proxy loading — the heavy models are loaded only when the first face needs to be verified, not at startup.</p>
+        <ul class="feature-list">
+          <li><span class="check">✓</span> <span><span class="label">Startup:</span> Near-instant boot, no 350 MB TensorFlow allocation</span></li>
+          <li><span class="check">✓</span> <span><span class="label">Memory:</span> Keeps idle RAM usage minimal</span></li>
+          <li><span class="check">✓</span> <span><span class="label">Free Tier Safe:</span> Fits within Render's 512 MB RAM limit</span></li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">Lazy Loading</span>
+          <span class="tag">Proxy Pattern</span>
+        </div>
+      </div>
+
+      <div class="card card--accent-top-red">
+        <h3 class="card-title">Telemetry Streaming</h3>
+        <p class="card-text">Real-time async WebSocket channels broadcast safety events, distances, and velocities to the dashboard — supervisors see alerts the instant they happen.</p>
+        <ul class="feature-list">
+          <li><span class="check">✓</span> <span><span class="label">WebSocket:</span> Live push to all connected dashboard clients</span></li>
+          <li><span class="check">✓</span> <span><span class="label">Email:</span> Supervisor alerts via Resend API with cooldown</span></li>
+          <li><span class="check">✓</span> <span><span class="label">Cooldown:</span> 60-second suppression per worker-machine pair</span></li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">WebSockets</span>
+          <span class="tag">Resend API</span>
+          <span class="tag">Async</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 7 — TECH STACK
+       ============================================================ -->
+  <section id="tech-stack">
+    <span class="section-label section-label--blue">Part 06</span>
+    <h2>Technology Stack — Tools We Used</h2>
+    <p class="section-desc">
+      Every tool was chosen for being best-in-class, open source, and completely free. The entire system runs at <strong>zero monthly cost</strong>.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Technology</th>
+            <th>What It Does (Simply)</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Object Detection</td>
+            <td>YOLOv8n (Ultralytics)</td>
+            <td>Spots people and machines in camera video</td>
+            <td class="cell-green">Free</td>
+          </tr>
+          <tr>
+            <td>Object Tracking</td>
+            <td>ByteTrack</td>
+            <td>Follows each person/machine across video frames</td>
+            <td class="cell-green">Free</td>
+          </tr>
+          <tr>
+            <td>Face Recognition</td>
+            <td>DeepFace (Facenet512)</td>
+            <td>Identifies who the worker is by their face</td>
+            <td class="cell-green">Free</td>
+          </tr>
+          <tr>
+            <td>Backend Server</td>
+            <td>FastAPI (Python)</td>
+            <td>Processes video, runs AI, serves the API</td>
+            <td class="cell-green">Free</td>
+          </tr>
+          <tr>
+            <td>Frontend Dashboard</td>
+            <td>Next.js 14 (React)</td>
+            <td>The supervisor's web dashboard</td>
+            <td class="cell-green">Free</td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td>Neon PostgreSQL</td>
+            <td>Stores workers, machines, and incident records</td>
+            <td class="cell-green">Free tier</td>
+          </tr>
+          <tr>
+            <td>Video Storage</td>
+            <td>Cloudflare R2</td>
+            <td>Stores incident video clips (10 GB free)</td>
+            <td class="cell-green">Free tier</td>
+          </tr>
+          <tr>
+            <td>Email Alerts</td>
+            <td>Resend</td>
+            <td>Sends alert emails to supervisors</td>
+            <td class="cell-green">Free tier</td>
+          </tr>
+          <tr>
+            <td>Backend Hosting</td>
+            <td>Render</td>
+            <td>Runs the Python server in the cloud</td>
+            <td class="cell-green">Free tier</td>
+          </tr>
+          <tr>
+            <td>Frontend Hosting</td>
+            <td>Vercel</td>
+            <td>Hosts the dashboard website globally</td>
+            <td class="cell-green">Free tier</td>
+          </tr>
+          <tr>
+            <td>CI/CD Pipeline</td>
+            <td>GitHub Actions</td>
+            <td>Automatically tests and deploys code changes</td>
+            <td class="cell-green">Free</td>
+          </tr>
+          <tr>
+            <td>AI Coding Agent</td>
+            <td>Antigravity + Gemini 3.7 Flash</td>
+            <td>AI assistant that helped write the production code</td>
+            <td class="cell-green">Free tier</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p><strong>Total monthly infrastructure cost: $0.</strong> Every single service is used within its free tier. Traditional mining CAS systems cost $15,000–$80,000 per machine. HALOCAS achieves comparable functionality at zero cost using open-source tools and free cloud services.</p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 8 — DASHBOARD
+       ============================================================ -->
+  <section id="dashboard">
+    <span class="section-label section-label--orange">Part 07</span>
+    <h2>The Dashboard — What Supervisors See</h2>
+    <p class="section-desc">
+      The production dashboard is a dark-themed command centre accessible from any web browser. Here's what each section does.
+    </p>
+
+    <div class="card card--accent-top-cyan">
+      <h3 class="card-title">Command Center Dashboard</h3>
+      <p class="card-text">The main landing page shows a complete safety overview at a glance: <strong>active machines</strong>, <strong>workers on-site</strong>, <strong>alerts today</strong> (split by severity), and <strong>system uptime</strong>. A live camera feed occupies the main area, with active alerts streaming on the right side — each showing the worker's name, their distance from the machine, and a severity badge.</p>
+      <div class="tag-row">
+        <span class="tag tag--green">● Real-Time</span>
+        <span class="tag">Summary Cards</span>
+        <span class="tag">Live Feed</span>
+        <span class="tag">Active Alerts</span>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card card--accent-top-blue">
+        <h3 class="card-title">Live Monitoring</h3>
+        <p class="card-text">Full-screen camera feed with AI detection overlays. Shows bounding boxes around detected workers and machines, with distance labels and confidence scores. A multi-camera selector on the right lets supervisors switch between Front Cabin, Rear Blind-Spot, Boom Panoramic, and Perimeter High-Mast feeds. Runs at 29.8 FPS with 14.2ms inference time.</p>
+      </div>
+
+      <div class="card card--accent-top-red">
+        <h3 class="card-title">Incident Logs &amp; Replays</h3>
+        <p class="card-text">A searchable, filterable archive of every proximity violation. Each incident shows: timestamp, worker name and ID, the equipment involved, the measured proximity distance, closing velocity, severity level (Critical / Warning / Caution), and whether the supervisor was notified. Click "View Clip" to replay the 5-second video evidence.</p>
+      </div>
+
+      <div class="card card--accent-top">
+        <h3 class="card-title">Personnel &amp; Biometrics</h3>
+        <p class="card-text">The worker directory displays all enrolled mine personnel with their role, department, biometric enrollment status (512-D Enrolled), hazard zone authorisation level, and breach history. Each worker has a profile "dossier" with their full incident history. Supports grid and table views.</p>
+      </div>
+
+      <div class="card card--accent-top-orange">
+        <h3 class="card-title">Fleet Management</h3>
+        <p class="card-text">Tracks all heavy equipment in the fleet — haul trucks, excavators, loaders — with their current operational zone, telemetry speed, number of mounted sensors, and online status (Active, Standby, or Maintenance). Shows 10 total fleet assets across multiple pit sectors.</p>
+      </div>
+    </div>
+
+    <div class="card card--accent-top-purple">
+      <h3 class="card-title">Settings &amp; Calibration</h3>
+      <p class="card-text">Safety thresholds are fully configurable: <strong>Critical Safety Halo Distance</strong> (default: 3 metres), <strong>Warning Safety Halo Distance</strong> (default: 10 metres), <strong>Camera Pixel-To-Metre Calibration Constant</strong>, <strong>Debounce Confirmation Window</strong> (how many consecutive frames must confirm danger before triggering), <strong>Alert Cooldown Window</strong> (60 seconds), and the <strong>Supervisor Email Gateway</strong> address for automated notifications.</p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 9 — JOURNEY
+       ============================================================ -->
+  <section id="journey">
+    <span class="section-label section-label--purple">Part 08</span>
+    <h2>The Journey — From Prototype to Production</h2>
+    <p class="section-desc">
+      HALOCAS didn't start as a production system. It began as a rough prototype with significant gaps, and was methodically transformed into a fully deployable, production-grade platform.
+    </p>
+
+    <h3>What the Prototype Already Had</h3>
+    <p>The original codebase was a solid proof of concept — it demonstrated that the core idea worked. It included:</p>
+    <ul class="feature-list">
+      <li><span class="check">✓</span> YOLOv8 object detection with ByteTrack multi-object tracking</li>
+      <li><span class="check">✓</span> A three-state safety machine (Safe → Warning → Critical)</li>
+      <li><span class="check">✓</span> A rolling video buffer that could export incident clips</li>
+      <li><span class="check">✓</span> A basic SQLite database for workers and incidents</li>
+      <li><span class="check">✓</span> Async email sending via SMTP</li>
+      <li><span class="check">✓</span> 24 unit tests covering all modules</li>
+      <li><span class="check">✓</span> A single-page HTML dashboard with MJPEG streaming</li>
+    </ul>
+
+    <h3 style="margin-top: 28px;">What Was Missing (and What We Built)</h3>
+    <p>The prototype had a critical weakness and several production gaps. Here's what changed:</p>
+
+    <div class="timeline-grid" style="margin-top: 20px;">
+      <div class="timeline-card">
+        <div class="timeline-date">Critical Fix</div>
+        <div class="timeline-title">Real Face Recognition</div>
+        <p class="timeline-text">The prototype used <strong>HSV colour histograms</strong> — essentially matching people by the colour of their hard hat. Two workers wearing the same coloured helmet would be confused. We replaced this with <strong>DeepFace (Facenet512)</strong>, which creates a 512-dimensional mathematical map of actual facial geometry. Accuracy jumped from unreliable to <strong>99.65%</strong>.</p>
+      </div>
+      <div class="timeline-card">
+        <div class="timeline-date">Infrastructure</div>
+        <div class="timeline-title">Production Database &amp; Cloud</div>
+        <p class="timeline-text">SQLite was replaced with <strong>Neon PostgreSQL</strong> for concurrent access and proper migrations. Video clips now upload to <strong>Cloudflare R2</strong> for permanent, zero-egress storage. Email was switched from localhost SMTP to the <strong>Resend API</strong> for reliable delivery.</p>
+      </div>
+      <div class="timeline-card">
+        <div class="timeline-date">Interface</div>
+        <div class="timeline-title">Professional Dashboard</div>
+        <p class="timeline-text">The basic HTML page was replaced with a full <strong>Next.js 14</strong> application featuring six pages: Dashboard, Live Monitoring, Incidents, Workers, Machines, and Settings — all with responsive design, real-time data, and professional dark-themed UI.</p>
+      </div>
+    </div>
+
+    <div class="callout callout--blue">
+      <p><strong>How was the code written?</strong> The entire production codebase was engineered using <strong>Antigravity IDE</strong> powered by <strong>Gemini 3.7 Flash</strong> — an AI coding agent. The production blueprint (a 45-page document) contained sequential prompts, and the AI agent executed each one phase by phase, with automated testing and validation at every step.</p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 10 — COMPARISON
+       ============================================================ -->
+  <section id="comparison">
+    <span class="section-label section-label--red">Part 09</span>
+    <h2>Impact &amp; Value — HALOCAS vs Traditional Systems</h2>
+    <p class="section-desc">
+      How does HALOCAS compare to the commercial Collision Avoidance Systems used in the mining industry today?
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Traditional CAS</th>
+            <th>HALOCAS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Proximity Detection</td>
+            <td>Radar / UWB / RFID tags</td>
+            <td class="cell-green">Camera + YOLOv8 AI</td>
+          </tr>
+          <tr>
+            <td>Alert Type</td>
+            <td>Audible alarm only</td>
+            <td class="cell-green">Email with video evidence</td>
+          </tr>
+          <tr>
+            <td>Person Identification</td>
+            <td class="cell-red">None</td>
+            <td class="cell-green">AI Face Recognition (DeepFace)</td>
+          </tr>
+          <tr>
+            <td>Supervisor Routing</td>
+            <td>Manual radio call</td>
+            <td class="cell-green">Automatic (database lookup)</td>
+          </tr>
+          <tr>
+            <td>Incident Evidence</td>
+            <td>Log entries only</td>
+            <td class="cell-green">Trimmed video clips with overlays</td>
+          </tr>
+          <tr>
+            <td>Dashboard</td>
+            <td>Proprietary, limited</td>
+            <td class="cell-green">Web-based, accessible from anywhere</td>
+          </tr>
+          <tr>
+            <td>Worker Enrollment</td>
+            <td>RFID tag distribution</td>
+            <td class="cell-green">Face photo upload (no wearable needed)</td>
+          </tr>
+          <tr>
+            <td>Cost per Machine</td>
+            <td class="cell-red">$15,000 – $80,000</td>
+            <td class="cell-green">$0 (open source)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>EMESRT Safety Classification</h3>
+    <p>
+      The mining industry uses the <strong>EMESRT</strong> (Earth Moving Equipment Safety Round Table) framework to classify CAS maturity from Level 1 (basic awareness) to Level 9 (fully autonomous). HALOCAS targets <strong>Level 6–7</strong> — active advisory with AI-powered identification and automatic supervisor notification. The face recognition component adds an intelligence layer that no commercial CAS currently offers at this price point.
+    </p>
+
+    <div class="table-wrap" style="margin-top: 20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Capability</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1–3</td>
+            <td>Awareness</td>
+            <td>Operator sees nearby objects on a display</td>
+          </tr>
+          <tr>
+            <td>4–6</td>
+            <td>Advisory</td>
+            <td>System generates active warnings and alarms</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 700; color: var(--accent-green);">7–8</td>
+            <td style="font-weight: 700; color: var(--accent-green);">Intervention ← HALOCAS</td>
+            <td>System alerts supervisor and can slow/stop machine</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td>Autonomous</td>
+            <td>System takes full control — emergency braking</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       SECTION 11 — GLOSSARY
+       ============================================================ -->
+  <section id="glossary">
+    <span class="section-label section-label--blue">Appendix</span>
+    <h2>Glossary — Simple Definitions</h2>
+    <p class="section-desc">
+      Technical terms used in this document, explained in plain language.
+    </p>
+
+    <div class="glossary-grid">
+      <div class="glossary-item">
+        <div class="glossary-term">CAS (Collision Avoidance System)</div>
+        <div class="glossary-def">A safety technology that prevents crashes between workers and heavy machines.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">PDS (Proximity Detection System)</div>
+        <div class="glossary-def">A system that measures and alerts when objects get too close to each other.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">YOLOv8</div>
+        <div class="glossary-def">"You Only Look Once" — an AI model that can detect objects (people, vehicles) in images extremely fast.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">ByteTrack</div>
+        <div class="glossary-def">A method that assigns each detected object a unique ID so it can be followed across multiple video frames.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">DeepFace</div>
+        <div class="glossary-def">An open-source face recognition library that can identify individuals from their facial features.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Facenet512</div>
+        <div class="glossary-def">A specific face recognition model that creates a 512-number mathematical "fingerprint" of each face.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">FastAPI</div>
+        <div class="glossary-def">A modern Python framework for building high-performance web servers and APIs.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Next.js</div>
+        <div class="glossary-def">A popular framework for building fast, interactive websites using React.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">PostgreSQL / Neon</div>
+        <div class="glossary-def">A powerful database system for storing structured data. Neon is a free cloud-hosted version.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">WebSocket</div>
+        <div class="glossary-def">A technology that allows the server to push live updates to the dashboard instantly, without refreshing the page.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Cloudflare R2</div>
+        <div class="glossary-def">A cloud storage service for files (like video clips) that's free for up to 10 GB.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">CI/CD</div>
+        <div class="glossary-def">Continuous Integration / Continuous Deployment — an automated system that tests code and publishes updates whenever changes are made.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">EMESRT</div>
+        <div class="glossary-def">Earth Moving Equipment Safety Round Table — an industry body that defines safety maturity levels for mining equipment.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Safety State Machine</div>
+        <div class="glossary-def">A logical system with defined states (Safe, Warning, Critical) that transitions between them based on distance and movement rules.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Closing Velocity</div>
+        <div class="glossary-def">The speed at which two objects are moving towards each other — i.e., how fast the gap is shrinking.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Embedding</div>
+        <div class="glossary-def">A list of numbers (like a mathematical fingerprint) that represents something — here, it represents a person's face in a way that computers can compare.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <div class="footer">
+    <p><strong>HALOCAS</strong> — Halo Collision Avoidance System &middot; <a href="https://github.com/Augmencord/halocas-production" target="_blank">GitHub Repository</a></p>
+    <p style="margin-top: 4px;">Engineered by <a href="https://augmencord.github.io" target="_blank">Augmencord Research Studio</a> &middot; Zero-Cost Architecture &middot; Production Ready v1.0</p>
+    <p style="margin-top: 12px; font-size: 0.72rem; color: #D1D5DB;">Confidential &amp; Proprietary &middot; Document generated October 2026</p>
+  </div>
+
+</div>
+
+</body>
+</html>
